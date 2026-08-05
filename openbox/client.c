@@ -2702,6 +2702,7 @@ static void client_calc_layer_internal(ObClient *self)
 void client_calc_layer(ObClient *self)
 {
     GList *it;
+    GList *fullscreen = NULL;
 
     /* skip over stuff above fullscreen layer */
     for (it = stacking_list; it; it = g_list_next(it))
@@ -2720,14 +2721,22 @@ void client_calc_layer(ObClient *self)
     for (it = stacking_list; it; it = g_list_next(it))
         if (window_layer(it->data) <= OB_STACKING_LAYER_FULLSCREEN) break;
 
-    /* now recalc any windows in the fullscreen layer which have not
-       had their layer recalced already */
+    /* collect any windows in the fullscreen layer which have not had their
+       layer recalced already.  they can't be recalced during this walk:
+       recalcing can restack the window, freeing its stacking_list node out
+       from under the iterator */
     for (; it; it = g_list_next(it)) {
         if (window_layer(it->data) < OB_STACKING_LAYER_FULLSCREEN) break;
         else if (WINDOW_IS_CLIENT(it->data) &&
                  !WINDOW_AS_CLIENT(it->data)->visited)
-            client_calc_layer_internal(it->data);
+            fullscreen = g_list_prepend(fullscreen, it->data);
     }
+
+    for (it = fullscreen; it; it = g_list_next(it))
+        /* recalcing one can visit others in the list as transients */
+        if (!WINDOW_AS_CLIENT(it->data)->visited)
+            client_calc_layer_internal(it->data);
+    g_list_free(fullscreen);
 }
 
 gboolean client_should_show(ObClient *self)

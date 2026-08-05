@@ -1,5 +1,5 @@
 AC_PREREQ([2.54])
-AC_INIT([openbox], [3.6], [http://bugzilla.icculus.org])
+AC_INIT([openbox], [3.7], [http://bugzilla.icculus.org])
 AC_CONFIG_SRCDIR([openbox/openbox.c])
 
 AM_INIT_AUTOMAKE([foreign])
@@ -30,16 +30,16 @@ dnl if you set anything to 0, you should also bump the MINOR version.
 dnl
 RR_MAJOR_VERSION=3
 RR_MINOR_VERSION=6
-RR_MICRO_VERSION=31
-RR_INTERFACE_AGE=2
-RR_BINARY_AGE=2
+RR_MICRO_VERSION=33
+RR_INTERFACE_AGE=1
+RR_BINARY_AGE=1
 RR_VERSION=$RR_MAJOR_VERSION.$RR_MINOR_VERSION
 
 OBT_MAJOR_VERSION=3
 OBT_MINOR_VERSION=6
-OBT_MICRO_VERSION=4
-OBT_INTERFACE_AGE=2
-OBT_BINARY_AGE=2
+OBT_MICRO_VERSION=5
+OBT_INTERFACE_AGE=3
+OBT_BINARY_AGE=3
 OBT_VERSION=$OBT_MAJOR_VERSION.$OBT_MINOR_VERSION
 
 AC_SUBST(RR_MAJOR_VERSION)
@@ -113,7 +113,7 @@ if test "$DIRNAME" = "no"; then
   AC_MSG_ERROR([The program "dirname" is not available. This program is required to build Openbox.])
 fi
 
-PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.14.0])
+PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.28.0])
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 

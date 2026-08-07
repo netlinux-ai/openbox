@@ -4,14 +4,17 @@ A fork of [danakj/openbox](https://github.com/danakj/openbox) packaged for the
 NetLinux package repository, carrying a **snap layouts** patch on top of
 upstream.
 
-**Packages:** <https://packages.netlinux.co.uk/debian/pool/main/o/openbox/> —
-built for both `stable` (Debian 12) and `resolute` (Ubuntu 26.04) on every push
-to the `netlinux` branch.
+**This package:**
+<https://packages.netlinux.co.uk/debian/pool/main/o/openbox/> — built for both
+`stable` (Debian 12) and `resolute` (Ubuntu 26.04) from the `netlinux` branch.
+
+**All NetLinux packages:** <https://packages.netlinux.co.uk/> — browse the full
+package set, and the apt source and GPG key needed to install any of them.
 
 ## Install
 
-See the [repository setup instructions](https://packages.netlinux.co.uk/) for
-the apt source and GPG key, then:
+Set up the apt source and GPG key as described on
+[packages.netlinux.co.uk](https://packages.netlinux.co.uk/), then:
 
 ```sh
 sudo apt install openbox

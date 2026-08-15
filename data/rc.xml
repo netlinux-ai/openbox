@@ -665,25 +665,25 @@
     <zone x="33" y="0" width="34" height="100"/>
     <zone x="67" y="0" width="33" height="100"/>
   </layout>
-  <!--
-  <layout>
-    <zone x="0" y="0" width="67" height="100"/>
-    <zone x="67" y="0" width="33" height="100"/>
-  </layout>
-  -->
 
   <layout>
-    <zone x="0" y="0" width="67" height="100"/>
-    <zone x="33" y="0" width="67" height="100"/>
+    <zone x="0" y="0" width="25" height="25"/>
+    <zone x="25" y="0" width="25" height="25"/>
+    <zone x="0" y="25" width="25" height="25"/>
+    <zone x="25" y="25" width="25" height="25"/>
+    <zone x="50" y="0" width="25" height="25"/>
+    <zone x="75" y="0" width="25" height="25"/>
+    <zone x="50" y="25" width="25" height="25"/>
+    <zone x="75" y="25" width="25" height="25"/>
+    <zone x="0" y="50" width="25" height="25"/>
+    <zone x="25" y="50" width="25" height="25"/>
+    <zone x="0" y="75" width="25" height="25"/>
+    <zone x="25" y="75" width="25" height="25"/>
+    <zone x="50" y="50" width="25" height="25"/>
+    <zone x="75" y="50" width="25" height="25"/>
+    <zone x="50" y="75" width="25" height="25"/>
+    <zone x="75" y="75" width="25" height="25"/>
   </layout>
-
-  <!--
-  <layout>
-    <zone x="0" y="0" width="50" height="100"/>
-    <zone x="50" y="0" width="50" height="50"/>
-    <zone x="50" y="50" width="50" height="50"/>
-  </layout>
-  -->
 
   <layout>
     <zone x="0" y="0" width="25" height="50"/>

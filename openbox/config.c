@@ -35,6 +35,8 @@ gboolean config_focus_raise;
 gboolean config_focus_last;
 gboolean config_focus_under_mouse;
 gboolean config_unfocus_leave;
+guint config_directional_distance_weight;
+guint config_directional_angle_weight;
 
 ObPlacePolicy  config_place_policy;
 gboolean       config_place_center;
@@ -98,6 +100,7 @@ guint    config_submenu_show_delay;
 guint    config_submenu_hide_delay;
 gboolean config_menu_manage_desktops;
 gboolean config_menu_show_icons;
+gboolean config_menu_separate_iconic;
 
 GSList *config_menu_files;
 
@@ -452,11 +455,15 @@ static void parse_key(xmlNodePtr node, GList *keylist)
     gchar *keystring, **keys, **key;
     xmlNodePtr n;
     gboolean is_chroot = FALSE;
+    gboolean grab = TRUE;
+    gboolean repeat = FALSE;
 
     if (!obt_xml_attr_string(node, "key", &keystring))
         return;
 
     obt_xml_attr_bool(node, "chroot", &is_chroot);
+    obt_xml_attr_bool(node, "grab", &grab);
+    obt_xml_attr_bool(node, "repeat", &repeat);
 
     keys = g_strsplit(keystring, " ", 0);
     for (key = keys; *key; ++key) {
@@ -474,7 +481,7 @@ static void parse_key(xmlNodePtr node, GList *keylist)
 
                 action = actions_parse(n);
                 if (action)
-                    keyboard_bind(keylist, action);
+                    keyboard_bind(keylist, action, grab, !repeat);
                 n = obt_xml_find_node(n->next, "action");
             }
         }
@@ -639,6 +646,14 @@ static void parse_focus(xmlNodePtr node, gpointer d)
         config_focus_under_mouse = obt_xml_node_bool(n);
     if ((n = obt_xml_find_node(node, "unfocusOnLeave")))
         config_unfocus_leave = obt_xml_node_bool(n);
+    if ((n = obt_xml_find_node(node, "directionalDistanceWeight")))
+        config_directional_distance_weight = obt_xml_node_int(n);
+    else
+        config_directional_distance_weight = 1U;
+    if ((n = obt_xml_find_node(node, "directionalAngleWeight")))
+        config_directional_angle_weight = obt_xml_node_int(n);
+    else
+        config_directional_angle_weight = 1U;
 }
 
 static void parse_placement(xmlNodePtr node, gpointer d)
@@ -650,6 +665,8 @@ static void parse_placement(xmlNodePtr node, gpointer d)
     if ((n = obt_xml_find_node(node, "policy"))) {
         if (obt_xml_node_contains(n, "UnderMouse"))
             config_place_policy = OB_PLACE_POLICY_MOUSE;
+        if (obt_xml_node_contains(n, "Random"))
+            config_place_policy = OB_PLACE_POLICY_RANDOM;
     }
     if ((n = obt_xml_find_node(node, "center"))) {
         config_place_center = obt_xml_node_bool(n);
@@ -758,7 +775,11 @@ static void parse_theme(xmlNodePtr node, gpointer d)
         }
         if ((fnode = obt_xml_find_node(n->children, "size"))) {
             int s = obt_xml_node_int(fnode);
-            if (s > 0) size = s;
+            if (s > 0) {
+                size = s;
+                if (obt_xml_attr_contains(fnode, "type", "absolute"))
+                    size = -size;
+            }
         }
         if ((fnode = obt_xml_find_node(n->children, "weight"))) {
             gchar *w = obt_xml_node_string(fnode);
@@ -777,6 +798,12 @@ static void parse_theme(xmlNodePtr node, gpointer d)
 
         *font = RrFontOpen(ob_rr_inst, name, size, weight, slant);
         g_free(name);
+
+        if ((fnode = obt_xml_find_node(n->children, "description"))) {
+            gchar *s = obt_xml_node_string(fnode);
+            RrFontDescriptionFromString(*font, s);
+            g_free(s);
+        }
     }
 }
 
@@ -960,6 +987,8 @@ static void parse_menu(xmlNodePtr node, gpointer d)
             g_message(_("Openbox was compiled without image loading support. Icons in menus will not be loaded."));
 #endif
     }
+    if ((n = obt_xml_find_node(node, "separateIconic")))
+        config_menu_separate_iconic = obt_xml_node_bool(n);
 
     for (node = obt_xml_find_node(node, "file");
          node;
@@ -1114,8 +1143,9 @@ static void bind_default_keyboard(void)
         { NULL, NULL }
     };
     for (it = binds; it->key; ++it) {
-        GList *l = g_list_append(NULL, g_strdup(it->key));
-        keyboard_bind(l, actions_parse_string(it->actname));
+        GList *l = g_list_append(NULL, (gchar*)it->key);
+        keyboard_bind(l, actions_parse_string(it->actname), TRUE, TRUE);
+        g_list_free(l);
     }
 }
 
@@ -1286,6 +1316,7 @@ void config_startup(ObtXmlInst *i)
     config_menu_manage_desktops = TRUE;
     config_menu_files = NULL;
     config_menu_show_icons = TRUE;
+    config_menu_separate_iconic = FALSE;
 
     obt_xml_register(i, "menu", parse_menu, NULL);
 

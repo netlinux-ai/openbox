@@ -716,6 +716,7 @@ void client_unmanage(ObClient *self)
     /* free all data allocated in the client struct */
     RrImageUnref(self->icon_set);
     g_slist_free(self->transients);
+    g_slist_free(self->parents);
     g_free(self->startup_id);
     g_free(self->wm_command);
     g_free(self->title);
@@ -1382,6 +1383,7 @@ static void client_get_state(ObClient *self)
 static void client_get_shaped(ObClient *self)
 {
     self->shaped = FALSE;
+    self->shaped_input = FALSE;
 #ifdef SHAPE
     if (obt_display_extension_shape) {
         gint foo;
@@ -1394,6 +1396,23 @@ static void client_get_shaped(ObClient *self)
                            &foo, &ufoo, &ufoo, &foo, &foo, &foo, &ufoo,
                            &ufoo);
         self->shaped = !!s;
+#ifdef ShapeInput
+        { /* when some smart people added ShapeInput they forgot to update XShapeQueryExtents or
+             add a new one for input shapes, so we get to do this instead, yay! */
+            int nrects, ordering;
+            XRectangle *input_rect = XShapeGetRectangles(obt_display, self->window,
+                                                         ShapeInput, &nrects, &ordering);
+            if (nrects == 1 && input_rect->width == self->area.width &&
+                               input_rect->height == self->area.height &&
+                               /* openbox sets the border width of client windows to 0 */
+                               input_rect->x == 0 && input_rect->y == 0) {
+                self->shaped_input = FALSE;
+            } else {
+                self->shaped_input = TRUE;
+            }
+            XFree(input_rect);
+        }
+#endif
     }
 #endif
 }
@@ -1438,6 +1457,7 @@ static void client_update_transient_tree(ObClient *self,
                                          ObClient *newparent)
 {
     GSList *it, *next;
+    GSList *direct_transients = NULL;
     ObClient *c;
 
     g_assert(!oldgtran || oldgroup);
@@ -1461,11 +1481,16 @@ static void client_update_transient_tree(ObClient *self,
 
     /** Remove the client from the transient tree **/
 
+    /* Save direct transients - their parent relationship to self is unchanged,
+       but they may need to pick up new group-transient siblings if self's
+       group-transient status changed */
     for (it = self->transients; it; it = next) {
         next = g_slist_next(it);
         c = it->data;
         self->transients = g_slist_delete_link(self->transients, it);
         c->parents = g_slist_remove(c->parents, self);
+        if (!c->transient_for_group)
+            direct_transients = g_slist_prepend(direct_transients, c);
     }
     for (it = self->parents; it; it = next) {
         next = g_slist_next(it);
@@ -1532,19 +1557,19 @@ static void client_update_transient_tree(ObClient *self,
         }
     }
 
-    /** If we change our group transient-ness, our children change their
-        effective group transient-ness, which affects how they relate to other
-        group windows **/
-
-    for (it = self->transients; it; it = g_slist_next(it)) {
+    /** Re-evaluate direct transients **/
+    /* Their parent relationship to self is unchanged, but self's
+       group-transient status may have changed, affecting which group windows
+       become their children. Pass NULL for oldparent to bypass the early
+       return - we know their actual parent (self) hasn't changed. */
+    for (it = direct_transients; it; it = g_slist_next(it)) {
         c = it->data;
-        if (!c->transient_for_group)
-            client_update_transient_tree(c, c->group, c->group,
-                                         c->transient_for_group,
-                                         c->transient_for_group,
-                                         client_direct_parent(c),
-                                         client_direct_parent(c));
+        client_update_transient_tree(c, c->group, c->group,
+                                     c->transient_for_group,
+                                     c->transient_for_group,
+                                     NULL, self);
     }
+    g_slist_free(direct_transients);
 }
 
 void client_get_mwm_hints(ObClient *self)
@@ -1715,18 +1740,21 @@ void client_update_opacity(ObClient *self)
         OBT_PROP_ERASE(self->frame->window, NET_WM_WINDOW_OPACITY);
 }
 
-void client_update_normal_hints(ObClient *self)
+void client_update_normal_hints(ObClient *realself)
 {
-    XSizeHints size;
+    XSizeHints size = {0};
     glong ret;
+    ObClient *self = g_new(ObClient, 1);
 
     /* defaults */
-    self->min_ratio = 0.0f;
-    self->max_ratio = 0.0f;
-    SIZE_SET(self->size_inc, 1, 1);
-    SIZE_SET(self->base_size, -1, -1);
-    SIZE_SET(self->min_size, 0, 0);
-    SIZE_SET(self->max_size, G_MAXINT, G_MAXINT);
+    realself->min_ratio = 0.0f;
+    realself->max_ratio = 0.0f;
+    SIZE_SET(realself->size_inc, 1, 1);
+    SIZE_SET(realself->base_size, -1, -1);
+    SIZE_SET(realself->min_size, 0, 0);
+    SIZE_SET(realself->max_size, G_MAXINT, G_MAXINT);
+
+    memcpy(self, realself, sizeof(ObClient));
 
     /* get the hints from the window */
     if (XGetWMNormalHints(obt_display, self->window, &size, &ret)) {
@@ -1740,6 +1768,9 @@ void client_update_normal_hints(ObClient *self)
             self->gravity = size.win_gravity;
 
         if (size.flags & PAspect) {
+            if ((unsigned int)size.min_aspect.x > 4096 ||
+                (unsigned int)size.min_aspect.y > 4096)
+                goto invalid_hints;
             if (size.min_aspect.y)
                 self->min_ratio =
                     (gfloat) size.min_aspect.x / size.min_aspect.y;
@@ -1748,17 +1779,33 @@ void client_update_normal_hints(ObClient *self)
                     (gfloat) size.max_aspect.x / size.max_aspect.y;
         }
 
-        if (size.flags & PMinSize)
+        if (size.flags & PMinSize) {
+            if ((unsigned int)size.min_width > 4096 ||
+                (unsigned int)size.min_height > 4096)
+                goto invalid_hints;
             SIZE_SET(self->min_size, size.min_width, size.min_height);
+        }
 
-        if (size.flags & PMaxSize)
+        if (size.flags & PMaxSize) {
+            if ((unsigned int)size.max_width > 4096 ||
+                (unsigned int)size.max_height > 4096)
+                goto invalid_hints;
             SIZE_SET(self->max_size, size.max_width, size.max_height);
+        }
 
-        if (size.flags & PBaseSize)
+        if (size.flags & PBaseSize) {
+            if ((unsigned int)size.base_width > 4096 ||
+                (unsigned int)size.base_height > 4096)
+                goto invalid_hints;
             SIZE_SET(self->base_size, size.base_width, size.base_height);
+        }
 
-        if (size.flags & PResizeInc && size.width_inc && size.height_inc)
+        if (size.flags & PResizeInc && size.width_inc && size.height_inc) {
+            if ((unsigned int)size.width_inc > 4096 ||
+                (unsigned int)size.height_inc > 4096)
+                goto invalid_hints;
             SIZE_SET(self->size_inc, size.width_inc, size.height_inc);
+        }
 
         ob_debug("Normal hints: min size (%d %d) max size (%d %d)",
                  self->min_size.width, self->min_size.height,
@@ -1769,6 +1816,12 @@ void client_update_normal_hints(ObClient *self)
     }
     else
         ob_debug("Normal hints: not set");
+    memcpy(realself, self, sizeof(ObClient));
+    g_free(self);
+    return;
+invalid_hints:
+    g_free(self);
+    ob_debug("Normal hints: corruption detected, not setting anything");
 }
 
 static void client_setup_default_decor_and_functions(ObClient *self)
@@ -1937,6 +1990,7 @@ void client_setup_decor_and_functions(ObClient *self, gboolean reconfig)
     /* now we need to check against rules for the client's current state */
     if (self->fullscreen) {
         self->functions &= (OB_CLIENT_FUNC_CLOSE |
+                            OB_CLIENT_FUNC_MOVE |
                             OB_CLIENT_FUNC_FULLSCREEN |
                             OB_CLIENT_FUNC_ICONIFY);
         self->decorations = 0;
@@ -2098,7 +2152,6 @@ void client_update_title(ObClient *self)
     gchar *data = NULL;
     gchar *visible = NULL;
 
-    g_free(self->title);
     g_free(self->original_title);
 
     /* try netwm */
@@ -2111,8 +2164,14 @@ void client_update_title(ObClient *self)
    http://developer.gnome.org/projects/gup/hig/draft_hig_new/windows-alert.html
    */
                 data = g_strdup("");
-            } else
-                data = g_strdup(_("Unnamed Window"));
+            } else {
+                if (self->class && *self->class)
+                    data = g_strdup(self->class);
+                else if (self->name && *self->name)
+                    data = g_strdup(self->name);
+                else
+                    data = g_strdup(_("Unnamed Window"));
+            }
         }
     }
     self->original_title = g_strdup(data);
@@ -2132,15 +2191,18 @@ void client_update_title(ObClient *self)
         g_free(data);
     }
 
-    OBT_PROP_SETS(self->window, NET_WM_VISIBLE_NAME, visible);
-    self->title = visible;
+    if (!self->title || strcmp(self->title, visible)) {
+        OBT_PROP_SETS(self->window, NET_WM_VISIBLE_NAME, visible);
+        g_free(self->title);
+        self->title = visible;
+    } else
+        g_free(visible);
 
     if (self->frame)
         frame_adjust_title(self->frame);
 
     /* update the icon title */
     data = NULL;
-    g_free(self->icon_title);
 
     /* try netwm */
     if (!OBT_PROP_GETS_UTF8(self->window, NET_WM_ICON_NAME, &data))
@@ -2163,8 +2225,12 @@ void client_update_title(ObClient *self)
         g_free(data);
     }
 
-    OBT_PROP_SETS(self->window, NET_WM_VISIBLE_ICON_NAME, visible);
-    self->icon_title = visible;
+    if (!self->icon_title || strcmp(self->icon_title, visible)) {
+        OBT_PROP_SETS(self->window, NET_WM_VISIBLE_ICON_NAME, visible);
+        g_free(self->icon_title);
+        self->icon_title = visible;
+    } else
+        g_free(visible);
 }
 
 void client_update_strut(ObClient *self)
@@ -2690,22 +2756,28 @@ static void client_calc_layer_recursive(ObClient *self, ObClient *orig,
 
 static void client_calc_layer_internal(ObClient *self)
 {
-    GSList *sit;
+    GSList *parents, *sit;
 
     /* transients take on the layer of their parents */
-    sit = client_search_all_top_parents(self);
+    parents = client_search_all_top_parents(self);
 
-    for (; sit; sit = g_slist_next(sit))
+    for (sit = parents; sit; sit = g_slist_next(sit))
         client_calc_layer_recursive(sit->data, self, 0);
+    g_slist_free(parents);
 }
 
 void client_calc_layer(ObClient *self)
 {
-    GList *it;
+    GList *it, *fs_start, *fs_end;
+    /* the client_calc_layer_internal calls below modify stacking_list,
+       so we have to make a copy to iterate over */
+    GList *list = g_list_copy(stacking_list);
 
     /* skip over stuff above fullscreen layer */
-    for (it = stacking_list; it; it = g_list_next(it))
+    for (it = list; it; it = g_list_next(it))
         if (window_layer(it->data) <= OB_STACKING_LAYER_FULLSCREEN) break;
+
+    fs_start = it;
 
     /* find the windows in the fullscreen layer, and mark them not-visited */
     for (; it; it = g_list_next(it)) {
@@ -2714,20 +2786,18 @@ void client_calc_layer(ObClient *self)
             WINDOW_AS_CLIENT(it->data)->visited = FALSE;
     }
 
+    fs_end = it;
+
     client_calc_layer_internal(self);
 
-    /* skip over stuff above fullscreen layer */
-    for (it = stacking_list; it; it = g_list_next(it))
-        if (window_layer(it->data) <= OB_STACKING_LAYER_FULLSCREEN) break;
-
-    /* now recalc any windows in the fullscreen layer which have not
+    /* now recalc any windows that were in the fullscreen layer which have not
        had their layer recalced already */
-    for (; it; it = g_list_next(it)) {
-        if (window_layer(it->data) < OB_STACKING_LAYER_FULLSCREEN) break;
-        else if (WINDOW_IS_CLIENT(it->data) &&
-                 !WINDOW_AS_CLIENT(it->data)->visited)
+    for (it = fs_start; it != fs_end; it = g_list_next(it))
+        if (WINDOW_IS_CLIENT(it->data) &&
+                !WINDOW_AS_CLIENT(it->data)->visited)
             client_calc_layer_internal(it->data);
-    }
+
+    g_list_free(list);
 }
 
 gboolean client_should_show(ObClient *self)
@@ -3118,8 +3188,10 @@ void client_try_configure(ObClient *self, gint *x, gint *y, gint *w, gint *h,
 
         /* adjust the height to match the width for the aspect ratios.
            for this, min size is not substituted for base size ever. */
-        *w -= self->base_size.width;
-        *h -= self->base_size.height;
+        if (self->base_size.width >= 0 && self->base_size.height >= 0) {
+            *w -= self->base_size.width;
+            *h -= self->base_size.height;
+        }
 
         if (minratio)
             if (*h * minratio > *w) {
@@ -3142,8 +3214,10 @@ void client_try_configure(ObClient *self, gint *x, gint *y, gint *w, gint *h,
                 }
             }
 
-        *w += self->base_size.width;
-        *h += self->base_size.height;
+        if (self->base_size.width >= 0 && self->base_size.height >= 0) {
+            *w += self->base_size.width;
+            *h += self->base_size.height;
+        }
     }
 
     /* these override the above states! if you cant move you can't move! */

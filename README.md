@@ -77,6 +77,29 @@ any `<layout>` replaces the built-in set entirely. The implementation lives in
 make
 ```
 
+## Testing without installing
+
+`openbox` takes `--config-file FILE` to run against a config other than
+`~/.config/openbox/rc.xml` or the system default, which is useful for trying
+out `rc.xml` changes (like editing `<snapLayouts>`) without touching either.
+Run it inside an `Xnest`/`Xephyr` nested display so it doesn't disturb your
+real session:
+
+```sh
+Xnest :3 -geometry 1280x800 &
+DISPLAY=:3 ./openbox/openbox --config-file data/rc.xml &
+DISPLAY=:3 xterm &   # or any client, to have a window to test against
+```
+
+`--config-file` only takes effect at startup, not on `--reconfigure`. After
+editing the XML again, reload it with:
+
+```sh
+DISPLAY=:3 ./openbox/openbox --reconfigure
+```
+
+which re-reads from the same path the instance was started with.
+
 Upstream's original README, covering the project itself, is in
 [`README`](README); see also [`README.GIT`](README.GIT) and
 [`README.NLS`](README.NLS).

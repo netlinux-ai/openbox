@@ -87,15 +87,21 @@ real session:
 
 ```sh
 Xnest :3 -geometry 1280x800 &
-DISPLAY=:3 ./openbox/openbox --config-file data/rc.xml &
+DISPLAY=:3 $PWD/openbox/openbox --config-file $PWD/data/rc.xml &
 DISPLAY=:3 xterm &   # or any client, to have a window to test against
 ```
+
+Use an absolute path for `--config-file` — a relative one is resolved against
+whatever directory the process happens to be started in, and if that doesn't
+match, Openbox silently falls back to your normal `~/.config/openbox/rc.xml`
+or the system default instead of erroring, so the change appears to do
+nothing.
 
 `--config-file` only takes effect at startup, not on `--reconfigure`. After
 editing the XML again, reload it with:
 
 ```sh
-DISPLAY=:3 ./openbox/openbox --reconfigure
+DISPLAY=:3 $PWD/openbox/openbox --reconfigure
 ```
 
 which re-reads from the same path the instance was started with.

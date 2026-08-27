@@ -20,3 +20,12 @@ Copyright (C) 2002  Dana Jansens
     GNU General Public License for more details.
 
     See the COPYING file for a copy of the GNU General Public License.
+
+----
+
+    For a quick start just run:
+    $ ./run.sh
+
+    This will do the configure, make and run up openbox with a local
+    configuration file to demo it.
+    If you are already running a window manager it'll just exit

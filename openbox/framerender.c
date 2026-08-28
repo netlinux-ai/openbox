@@ -31,6 +31,8 @@ static void framerender_iconify(ObFrame *self, RrAppearance *a);
 static void framerender_desk(ObFrame *self, RrAppearance *a);
 static void framerender_shade(ObFrame *self, RrAppearance *a);
 static void framerender_close(ObFrame *self, RrAppearance *a);
+static void framerender_openbox_config(ObFrame *self, RrAppearance *a);
+static void framerender_layer(ObFrame *self, RrAppearance *a);
 
 void framerender_frame(ObFrame *self)
 {
@@ -348,8 +350,8 @@ void framerender_frame(ObFrame *self)
         framerender_desk(self, d);
         framerender_shade(self, s);
         framerender_close(self, c);
-        framerender_close(self, o);
-        framerender_close(self, y);
+        framerender_openbox_config(self, o);
+        framerender_layer(self, y);
     }
 
     if (self->decorations & OB_FRAME_DECOR_HANDLE &&
@@ -446,5 +448,19 @@ static void framerender_close(ObFrame *self, RrAppearance *a)
 {
     if (!self->close_on) return;
     RrPaint(a, self->close,
+            ob_rr_theme->button_size, ob_rr_theme->button_size);
+}
+
+static void framerender_openbox_config(ObFrame *self, RrAppearance *a)
+{
+    if (!self->openbox_config_on) return;
+    RrPaint(a, self->openbox_config,
+            ob_rr_theme->button_size, ob_rr_theme->button_size);
+}
+
+static void framerender_layer(ObFrame *self, RrAppearance *a)
+{
+    if (!self->layer_on) return;
+    RrPaint(a, self->layer,
             ob_rr_theme->button_size, ob_rr_theme->button_size);
 }

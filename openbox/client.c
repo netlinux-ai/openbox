@@ -1837,7 +1837,9 @@ static void client_setup_default_decor_and_functions(ObClient *self)
          OB_FRAME_DECOR_ICONIFY |
          OB_FRAME_DECOR_MAXIMIZE |
          OB_FRAME_DECOR_SHADE |
-         OB_FRAME_DECOR_CLOSE);
+         OB_FRAME_DECOR_CLOSE |
+         OB_FRAME_DECOR_OPENBOX_CONFIG |
+         OB_FRAME_DECOR_LAYER);
     self->functions =
         (OB_CLIENT_FUNC_RESIZE |
          OB_CLIENT_FUNC_MOVE |

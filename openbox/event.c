@@ -1053,7 +1053,7 @@ static void event_handle_client(ObClient *client, XEvent *e)
             /* handle special button actions on release */
             if (e->type == ButtonRelease) {
                 if (original_con == OB_FRAME_CONTEXT_OPENBOX_CONFIG) {
-                    g_spawn_command_line_async("obconf2", NULL);
+                    g_spawn_command_line_async("obconf", NULL);
                 } else if (original_con == OB_FRAME_CONTEXT_LAYER) {
                     /* layer menu will be shown here */
                     ob_debug("Layer button clicked - menu support TODO");

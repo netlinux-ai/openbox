@@ -136,6 +136,8 @@ struct _RrTheme {
     RrButton *btn_desk;
     RrButton *btn_shade;
     RrButton *btn_iconify;
+    RrButton *btn_openbox_config;
+    RrButton *btn_layer;
 
     /* global appearances */
     RrAppearance *a_focused_grip;

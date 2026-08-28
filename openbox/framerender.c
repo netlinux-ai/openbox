@@ -187,19 +187,19 @@ void framerender_frame(ObFrame *self)
                    ob_rr_theme->btn_close->a_focused_hover :
                    ob_rr_theme->btn_close->a_focused_unpressed)));
             o = (!(self->decorations & OB_FRAME_DECOR_OPENBOX_CONFIG) ?
-                 ob_rr_theme->btn_close->a_focused_disabled :
+                 ob_rr_theme->btn_openbox_config->a_focused_disabled :
                  (self->openbox_config_press ?
-                  ob_rr_theme->btn_close->a_focused_pressed :
+                  ob_rr_theme->btn_openbox_config->a_focused_pressed :
                   (self->openbox_config_hover ?
-                   ob_rr_theme->btn_close->a_focused_hover :
-                   ob_rr_theme->btn_close->a_focused_unpressed)));
+                   ob_rr_theme->btn_openbox_config->a_focused_hover :
+                   ob_rr_theme->btn_openbox_config->a_focused_unpressed)));
             y = (!(self->decorations & OB_FRAME_DECOR_LAYER) ?
-                 ob_rr_theme->btn_close->a_focused_disabled :
+                 ob_rr_theme->btn_layer->a_focused_disabled :
                  (self->layer_press ?
-                  ob_rr_theme->btn_close->a_focused_pressed :
+                  ob_rr_theme->btn_layer->a_focused_pressed :
                   (self->layer_hover ?
-                   ob_rr_theme->btn_close->a_focused_hover :
-                   ob_rr_theme->btn_close->a_focused_unpressed)));
+                   ob_rr_theme->btn_layer->a_focused_hover :
+                   ob_rr_theme->btn_layer->a_focused_unpressed)));
         } else {
             t = ob_rr_theme->a_unfocused_title;
             l = ob_rr_theme->a_unfocused_label;
@@ -258,19 +258,19 @@ void framerender_frame(ObFrame *self)
                    ob_rr_theme->btn_close->a_unfocused_hover :
                    ob_rr_theme->btn_close->a_unfocused_unpressed)));
             o = (!(self->decorations & OB_FRAME_DECOR_OPENBOX_CONFIG) ?
-                 ob_rr_theme->btn_close->a_unfocused_disabled :
+                 ob_rr_theme->btn_openbox_config->a_unfocused_disabled :
                  (self->openbox_config_press ?
-                  ob_rr_theme->btn_close->a_unfocused_pressed :
+                  ob_rr_theme->btn_openbox_config->a_unfocused_pressed :
                   (self->openbox_config_hover ?
-                   ob_rr_theme->btn_close->a_unfocused_hover :
-                   ob_rr_theme->btn_close->a_unfocused_unpressed)));
+                   ob_rr_theme->btn_openbox_config->a_unfocused_hover :
+                   ob_rr_theme->btn_openbox_config->a_unfocused_unpressed)));
             y = (!(self->decorations & OB_FRAME_DECOR_LAYER) ?
-                 ob_rr_theme->btn_close->a_unfocused_disabled :
+                 ob_rr_theme->btn_layer->a_unfocused_disabled :
                  (self->layer_press ?
-                  ob_rr_theme->btn_close->a_unfocused_pressed :
+                  ob_rr_theme->btn_layer->a_unfocused_pressed :
                   (self->layer_hover ?
-                   ob_rr_theme->btn_close->a_unfocused_hover :
-                   ob_rr_theme->btn_close->a_unfocused_unpressed)));
+                   ob_rr_theme->btn_layer->a_unfocused_hover :
+                   ob_rr_theme->btn_layer->a_unfocused_unpressed)));
         }
         clear = ob_rr_theme->a_clear;
 

@@ -191,6 +191,8 @@ RrTheme* RrThemeNew(const RrInstance *inst, const gchar *name,
     theme->btn_desk = RrButtonNew(inst);
     theme->btn_shade = RrButtonNew(inst);
     theme->btn_iconify = RrButtonNew(inst);
+    theme->btn_openbox_config = RrButtonNew(inst);
+    theme->btn_layer = RrButtonNew(inst);
 
     /* init appearances */
     theme->a_focused_grip = RrAppearanceNew(inst, 0);
@@ -517,6 +519,20 @@ RrTheme* RrThemeNew(const RrInstance *inst, const gchar *name,
     {
         guchar normal_mask[] = { 0x00, 0x00, 0x00, 0x00, 0x3f, 0x3f };
         read_button_styles(db, inst, path, theme, theme->btn_iconify, "iconify",
+                           &fbs, normal_mask, NULL);
+    }
+
+    /* openbox config button (three sliders) */
+    {
+        guchar normal_mask[] = { 0x3f, 0x00, 0x3f, 0x00, 0x3f, 0x00 };
+        read_button_styles(db, inst, path, theme, theme->btn_openbox_config,
+                           "openbox_config", &fbs, normal_mask, NULL);
+    }
+
+    /* layer button (stacked bars) */
+    {
+        guchar normal_mask[] = { 0x1c, 0x00, 0x3e, 0x00, 0x3f, 0x00 };
+        read_button_styles(db, inst, path, theme, theme->btn_layer, "layer",
                            &fbs, normal_mask, NULL);
     }
 
@@ -1013,6 +1029,8 @@ void RrThemeFree(RrTheme *theme)
         RrButtonFree(theme->btn_desk);
         RrButtonFree(theme->btn_shade);
         RrButtonFree(theme->btn_iconify);
+        RrButtonFree(theme->btn_openbox_config);
+        RrButtonFree(theme->btn_layer);
 
         RrColorFree(theme->menu_border_color);
         RrColorFree(theme->osd_border_color);

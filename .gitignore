@@ -62,6 +62,7 @@ version.h
 .cache
 .libs
 .deps
+_local-install
 tests/aspect
 tests/big
 tests/borderchange

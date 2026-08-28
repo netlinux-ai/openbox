@@ -1048,6 +1048,16 @@ static void event_handle_client(ObClient *client, XEvent *e)
                 *but = (e->type == ButtonPress);
                 frame_adjust_state(client->frame);
             }
+
+            /* handle special button actions */
+            if (e->type == ButtonRelease) {
+                if (con == OB_FRAME_CONTEXT_OPENBOX_CONFIG) {
+                    g_spawn_command_line_async("obconf2", NULL);
+                } else if (con == OB_FRAME_CONTEXT_LAYER) {
+                    /* layer menu will be shown here */
+                    ob_debug("Layer button clicked - menu support TODO");
+                }
+            }
         }
         break;
     case MotionNotify:

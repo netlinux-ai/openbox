@@ -1036,6 +1036,8 @@ void frame_grab_client(ObFrame *self)
     window_add(&self->label, CLIENT_AS_WINDOW(self->client));
     window_add(&self->max, CLIENT_AS_WINDOW(self->client));
     window_add(&self->close, CLIENT_AS_WINDOW(self->client));
+    window_add(&self->openbox_config, CLIENT_AS_WINDOW(self->client));
+    window_add(&self->layer, CLIENT_AS_WINDOW(self->client));
     window_add(&self->desk, CLIENT_AS_WINDOW(self->client));
     window_add(&self->shade, CLIENT_AS_WINDOW(self->client));
     window_add(&self->icon, CLIENT_AS_WINDOW(self->client));
@@ -1108,6 +1110,8 @@ void frame_release_client(ObFrame *self)
     window_remove(self->label);
     window_remove(self->max);
     window_remove(self->close);
+    window_remove(self->openbox_config);
+    window_remove(self->layer);
     window_remove(self->desk);
     window_remove(self->shade);
     window_remove(self->icon);

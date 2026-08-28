@@ -126,7 +126,7 @@ void framerender_frame(ObFrame *self)
     }
 
     if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
-        RrAppearance *t, *l, *m, *n, *i, *d, *s, *c, *clear;
+        RrAppearance *t, *l, *m, *n, *i, *d, *s, *c, *o, *y, *clear;
         if (self->focused) {
             t = ob_rr_theme->a_focused_title;
             l = ob_rr_theme->a_focused_label;
@@ -184,6 +184,20 @@ void framerender_frame(ObFrame *self)
                   (self->close_hover ?
                    ob_rr_theme->btn_close->a_focused_hover :
                    ob_rr_theme->btn_close->a_focused_unpressed)));
+            o = (!(self->decorations & OB_FRAME_DECOR_OPENBOX_CONFIG) ?
+                 ob_rr_theme->btn_close->a_focused_disabled :
+                 (self->openbox_config_press ?
+                  ob_rr_theme->btn_close->a_focused_pressed :
+                  (self->openbox_config_hover ?
+                   ob_rr_theme->btn_close->a_focused_hover :
+                   ob_rr_theme->btn_close->a_focused_unpressed)));
+            y = (!(self->decorations & OB_FRAME_DECOR_LAYER) ?
+                 ob_rr_theme->btn_close->a_focused_disabled :
+                 (self->layer_press ?
+                  ob_rr_theme->btn_close->a_focused_pressed :
+                  (self->layer_hover ?
+                   ob_rr_theme->btn_close->a_focused_hover :
+                   ob_rr_theme->btn_close->a_focused_unpressed)));
         } else {
             t = ob_rr_theme->a_unfocused_title;
             l = ob_rr_theme->a_unfocused_label;
@@ -239,6 +253,20 @@ void framerender_frame(ObFrame *self)
                  (self->close_press ?
                   ob_rr_theme->btn_close->a_unfocused_pressed :
                   (self->close_hover ?
+                   ob_rr_theme->btn_close->a_unfocused_hover :
+                   ob_rr_theme->btn_close->a_unfocused_unpressed)));
+            o = (!(self->decorations & OB_FRAME_DECOR_OPENBOX_CONFIG) ?
+                 ob_rr_theme->btn_close->a_unfocused_disabled :
+                 (self->openbox_config_press ?
+                  ob_rr_theme->btn_close->a_unfocused_pressed :
+                  (self->openbox_config_hover ?
+                   ob_rr_theme->btn_close->a_unfocused_hover :
+                   ob_rr_theme->btn_close->a_unfocused_unpressed)));
+            y = (!(self->decorations & OB_FRAME_DECOR_LAYER) ?
+                 ob_rr_theme->btn_close->a_unfocused_disabled :
+                 (self->layer_press ?
+                  ob_rr_theme->btn_close->a_unfocused_pressed :
+                  (self->layer_hover ?
                    ob_rr_theme->btn_close->a_unfocused_hover :
                    ob_rr_theme->btn_close->a_unfocused_unpressed)));
         }
@@ -305,6 +333,14 @@ void framerender_frame(ObFrame *self)
         c->surface.parentx = self->close_x;
         c->surface.parenty = ob_rr_theme->paddingy + 1;
 
+        o->surface.parent = t;
+        o->surface.parentx = self->openbox_config_x;
+        o->surface.parenty = ob_rr_theme->paddingy + 1;
+
+        y->surface.parent = t;
+        y->surface.parentx = self->layer_x;
+        y->surface.parenty = ob_rr_theme->paddingy + 1;
+
         framerender_label(self, l);
         framerender_max(self, m);
         framerender_icon(self, n);
@@ -312,6 +348,8 @@ void framerender_frame(ObFrame *self)
         framerender_desk(self, d);
         framerender_shade(self, s);
         framerender_close(self, c);
+        framerender_close(self, o);
+        framerender_close(self, y);
     }
 
     if (self->decorations & OB_FRAME_DECOR_HANDLE &&

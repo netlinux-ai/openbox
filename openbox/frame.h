@@ -50,6 +50,8 @@ typedef enum {
     OB_FRAME_CONTEXT_ICONIFY,
     OB_FRAME_CONTEXT_ICON,
     OB_FRAME_CONTEXT_CLOSE,
+    OB_FRAME_CONTEXT_OPENBOX_CONFIG,
+    OB_FRAME_CONTEXT_LAYER,
     /*! This is a special context, which occurs while dragging a window in
       a move/resize */
     OB_FRAME_CONTEXT_MOVE_RESIZE,
@@ -76,7 +78,9 @@ typedef enum {
       all desktops */
     OB_FRAME_DECOR_ALLDESKTOPS = 1 << 7,
     OB_FRAME_DECOR_SHADE       = 1 << 8, /*!< Display a shade button */
-    OB_FRAME_DECOR_CLOSE       = 1 << 9  /*!< Display a close button */
+    OB_FRAME_DECOR_CLOSE       = 1 << 9, /*!< Display a close button */
+    OB_FRAME_DECOR_OPENBOX_CONFIG = 1 << 10, /*!< Display config button */
+    OB_FRAME_DECOR_LAYER       = 1 << 11  /*!< Display layer button */
 } ObFrameDecorations;
 
 struct _ObFrame
@@ -101,6 +105,8 @@ struct _ObFrame
     Window    shade;
     Window    icon;
     Window    iconify;
+    Window    openbox_config;
+    Window    layer;
     Window    handle;
     Window    lgrip;
     Window    rgrip;
@@ -152,6 +158,8 @@ struct _ObFrame
     gint      shade_on;   /* if the window shade button is on */
     gint      max_on;     /* if the window maximize button is on */
     gint      close_on;   /* if the window close button is on */
+    gint      openbox_config_on; /* if the openbox config button is on */
+    gint      layer_on;   /* if the window layer button is on */
 
     gint      width;         /* width of the titlebar and handle */
     gint      label_width;   /* width of the label in the titlebar */
@@ -162,6 +170,8 @@ struct _ObFrame
     gint      shade_x;       /* x-position of the window shade button */
     gint      max_x;         /* x-position of the window maximize button */
     gint      close_x;       /* x-position of the window close button */
+    gint      openbox_config_x; /* x-position of the openbox config button */
+    gint      layer_x;       /* x-position of the window layer button */
     gint      bwidth;        /* border width */
     gint      cbwidth_l;     /* client border width */
     gint      cbwidth_t;     /* client border width */
@@ -180,11 +190,15 @@ struct _ObFrame
     gboolean  desk_press;
     gboolean  shade_press;
     gboolean  iconify_press;
+    gboolean  openbox_config_press;
+    gboolean  layer_press;
     gboolean  max_hover;
     gboolean  close_hover;
     gboolean  desk_hover;
     gboolean  shade_hover;
     gboolean  iconify_hover;
+    gboolean  openbox_config_hover;
+    gboolean  layer_hover;
 
     gboolean  focused;
     gboolean  need_render;

@@ -88,6 +88,8 @@ ObFrameContext mouse_button_frame_context(ObFrameContext context,
     case OB_FRAME_CONTEXT_ICONIFY:
     case OB_FRAME_CONTEXT_ICON:
     case OB_FRAME_CONTEXT_CLOSE:
+    case OB_FRAME_CONTEXT_OPENBOX_CONFIG:
+    case OB_FRAME_CONTEXT_LAYER:
         x = OB_FRAME_CONTEXT_TITLEBAR;
         break;
     case OB_FRAME_NUM_CONTEXTS:

@@ -932,6 +932,10 @@ static gboolean *context_to_button(ObFrame *f, ObFrameContext con, gboolean pres
             return &f->desk_press;
         case OB_FRAME_CONTEXT_SHADE:
             return &f->shade_press;
+        case OB_FRAME_CONTEXT_OPENBOX_CONFIG:
+            return &f->openbox_config_press;
+        case OB_FRAME_CONTEXT_LAYER:
+            return &f->layer_press;
         default:
             return NULL;
         }
@@ -947,6 +951,10 @@ static gboolean *context_to_button(ObFrame *f, ObFrameContext con, gboolean pres
             return &f->desk_hover;
         case OB_FRAME_CONTEXT_SHADE:
             return &f->shade_hover;
+        case OB_FRAME_CONTEXT_OPENBOX_CONFIG:
+            return &f->openbox_config_hover;
+        case OB_FRAME_CONTEXT_LAYER:
+            return &f->layer_hover;
         default:
             return NULL;
         }
@@ -1056,13 +1064,16 @@ static void event_handle_client(ObClient *client, XEvent *e)
             /* we've left the button area inside the titlebar */
             if (client->frame->max_hover || client->frame->desk_hover ||
                 client->frame->shade_hover || client->frame->iconify_hover ||
-                client->frame->close_hover)
+                client->frame->close_hover || client->frame->openbox_config_hover ||
+                client->frame->layer_hover)
             {
                 client->frame->max_hover =
                     client->frame->desk_hover =
                     client->frame->shade_hover =
                     client->frame->iconify_hover =
-                    client->frame->close_hover = FALSE;
+                    client->frame->close_hover =
+                    client->frame->openbox_config_hover =
+                    client->frame->layer_hover = FALSE;
                 frame_adjust_state(client->frame);
             }
             snap_hover_end();
@@ -1092,13 +1103,17 @@ static void event_handle_client(ObClient *client, XEvent *e)
                 client->frame->desk_hover =
                 client->frame->shade_hover =
                 client->frame->iconify_hover =
-                client->frame->close_hover = FALSE;
+                client->frame->close_hover =
+                client->frame->openbox_config_hover =
+                client->frame->layer_hover = FALSE;
             if (e->xcrossing.mode == NotifyGrab) {
                 client->frame->max_press =
                     client->frame->desk_press =
                     client->frame->shade_press =
                     client->frame->iconify_press =
-                    client->frame->close_press = FALSE;
+                    client->frame->close_press =
+                    client->frame->openbox_config_press =
+                    client->frame->layer_press = FALSE;
             }
             snap_hover_end();
             break;

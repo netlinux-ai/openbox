@@ -159,6 +159,8 @@ ObFrame *frame_new(ObClient *client)
     self->shade = createWindow(self->title, NULL, mask, &attrib);
     self->icon = createWindow(self->title, NULL, mask, &attrib);
     self->iconify = createWindow(self->title, NULL, mask, &attrib);
+    self->openbox_config = createWindow(self->title, NULL, mask, &attrib);
+    self->layer = createWindow(self->title, NULL, mask, &attrib);
 
     self->handle = createWindow(self->window, NULL, mask, &attrib);
     self->lgrip = createWindow(self->handle, NULL, mask, &attrib);
@@ -184,9 +186,11 @@ ObFrame *frame_new(ObClient *client)
     XMapWindow(obt_display, self->backfront);
 
     self->max_press = self->close_press = self->desk_press =
-        self->iconify_press = self->shade_press = FALSE;
+        self->iconify_press = self->shade_press = self->openbox_config_press =
+        self->layer_press = FALSE;
     self->max_hover = self->close_hover = self->desk_hover =
-        self->iconify_hover = self->shade_hover = FALSE;
+        self->iconify_hover = self->shade_hover = self->openbox_config_hover =
+        self->layer_hover = FALSE;
 
     /* make sure the size will be different the first time, so the extent hints
        will be set */
@@ -211,6 +215,10 @@ static void set_theme_statics(ObFrame *self)
     XResizeWindow(obt_display, self->desk,
                   ob_rr_theme->button_size, ob_rr_theme->button_size);
     XResizeWindow(obt_display, self->shade,
+                  ob_rr_theme->button_size, ob_rr_theme->button_size);
+    XResizeWindow(obt_display, self->openbox_config,
+                  ob_rr_theme->button_size, ob_rr_theme->button_size);
+    XResizeWindow(obt_display, self->layer,
                   ob_rr_theme->button_size, ob_rr_theme->button_size);
     XResizeWindow(obt_display, self->tltresize,
                   ob_rr_theme->grip_width, ob_rr_theme->paddingy + 1);
@@ -1150,6 +1158,10 @@ static gboolean is_button_present(ObFrame *self, const gchar *lc, gint dir) {
             return TRUE;
         if (*lc == 'C' && self->decorations & OB_FRAME_DECOR_CLOSE)
             return TRUE;
+        if (*lc == 'O' && self->decorations & OB_FRAME_DECOR_OPENBOX_CONFIG)
+            return TRUE;
+        if (*lc == 'Y' && self->decorations & OB_FRAME_DECOR_LAYER)
+            return TRUE;
         if (*lc == 'L') return FALSE;
     }
     return FALSE;
@@ -1190,7 +1202,8 @@ static void layout_title(ObFrame *self)
 
     /* turn them all off */
     self->icon_on = self->desk_on = self->shade_on = self->iconify_on =
-        self->max_on = self->close_on = self->label_on = FALSE;
+        self->max_on = self->close_on = self->openbox_config_on =
+        self->layer_on = self->label_on = FALSE;
     self->label_width = self->width - (ob_rr_theme->paddingx + 1) * 2;
     self->leftmost = self->rightmost = OB_FRAME_CONTEXT_NONE;
 
@@ -1241,6 +1254,12 @@ static void layout_title(ObFrame *self)
             } else if (*lc == 'C') {
                 if (firstcon) *firstcon = OB_FRAME_CONTEXT_CLOSE;
                 place_button(self, lc, bwidth, left, i, &x, &self->close_on, &self->close_x);
+            } else if (*lc == 'O') {
+                if (firstcon) *firstcon = OB_FRAME_CONTEXT_OPENBOX_CONFIG;
+                place_button(self, lc, bwidth, left, i, &x, &self->openbox_config_on, &self->openbox_config_x);
+            } else if (*lc == 'Y') {
+                if (firstcon) *firstcon = OB_FRAME_CONTEXT_LAYER;
+                place_button(self, lc, bwidth, left, i, &x, &self->layer_on, &self->layer_x);
             } else
                 continue; /* don't set firstcon */
             firstcon = NULL;
@@ -1289,6 +1308,20 @@ static void layout_title(ObFrame *self)
                     ob_rr_theme->paddingy + 1);
     } else
         XUnmapWindow(obt_display, self->close);
+
+    if (self->openbox_config_on) {
+        XMapWindow(obt_display, self->openbox_config);
+        XMoveWindow(obt_display, self->openbox_config, self->openbox_config_x,
+                    ob_rr_theme->paddingy + 1);
+    } else
+        XUnmapWindow(obt_display, self->openbox_config);
+
+    if (self->layer_on) {
+        XMapWindow(obt_display, self->layer);
+        XMoveWindow(obt_display, self->layer, self->layer_x,
+                    ob_rr_theme->paddingy + 1);
+    } else
+        XUnmapWindow(obt_display, self->layer);
 
     if (self->label_on && self->label_width > 0) {
         XMapWindow(obt_display, self->label);
@@ -1382,6 +1415,10 @@ ObFrameContext frame_context_from_string(const gchar *name)
         return OB_FRAME_CONTEXT_ICON;
     else if (!g_ascii_strcasecmp("Close", name))
         return OB_FRAME_CONTEXT_CLOSE;
+    else if (!g_ascii_strcasecmp("OpenboxConfig", name))
+        return OB_FRAME_CONTEXT_OPENBOX_CONFIG;
+    else if (!g_ascii_strcasecmp("Layer", name))
+        return OB_FRAME_CONTEXT_LAYER;
     else if (!g_ascii_strcasecmp("MoveResize", name))
         return OB_FRAME_CONTEXT_MOVE_RESIZE;
     else if (!g_ascii_strcasecmp("Dock", name))
@@ -1522,6 +1559,8 @@ ObFrameContext frame_context(ObClient *client, Window win, gint x, gint y)
     if (win == self->icon)              return OB_FRAME_CONTEXT_ICON;
     if (win == self->desk)              return OB_FRAME_CONTEXT_ALLDESKTOPS;
     if (win == self->shade)             return OB_FRAME_CONTEXT_SHADE;
+    if (win == self->openbox_config)    return OB_FRAME_CONTEXT_OPENBOX_CONFIG;
+    if (win == self->layer)             return OB_FRAME_CONTEXT_LAYER;
 
     return OB_FRAME_CONTEXT_NONE;
 }

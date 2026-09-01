@@ -43,7 +43,7 @@
   </placement>
   <theme>
     <name>Clearlooks-3.4</name>
-    <titleLayout>NDOYLSIMCY</titleLayout>
+    <titleLayout>NDOYLSIMC</titleLayout>
     <!--
       available characters are NDLSIMCOY, each can occur at most once.
       N: window icon
@@ -56,7 +56,7 @@
       O: open the configuration manager (see configManagerCommand below).
       Y: change the window's layer (always on top/normal/always on bottom).
   -->
-    <configManagerCommand>/Data/obconf/src/obconf</configManagerCommand>
+    <configManagerCommand>obconf</configManagerCommand>
     <!-- command line run when the 'O' titlebar button is clicked. -->
     <keepBorder>no</keepBorder>
     <animateIconify>no</animateIconify>

@@ -56,7 +56,7 @@
       O: open the configuration manager (see configManagerCommand below).
       Y: change the window's layer (always on top/normal/always on bottom).
   -->
-    <configManagerCommand>obconf</configManagerCommand>
+    <configManagerCommand>/Data/obconf/_local-install/bin/obconf</configManagerCommand>
     <!-- command line run when the 'O' titlebar button is clicked. -->
     <keepBorder>no</keepBorder>
     <animateIconify>no</animateIconify>

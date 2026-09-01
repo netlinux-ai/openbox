@@ -479,43 +479,34 @@ msgstr "Petita klavo \"%s\" ne ekzistas ĉe la ekranprezento"
 msgid "OK"
 msgstr "OK"
 
-#. TRANSLATORS: Don't translate the word "SessionLogout" as it's the
-#. name of the action you write in rc.xml
-#: openbox/actions/session.c:43
-msgid ""
-"The SessionLogout action is not available since Openbox was built without "
-"session management support"
-msgstr ""
-"La ago SessionLogout ne estas disponebla, ĉar Openbox estis muntita sen "
-"seancadministrado"
+#~ msgid ""
+#~ "The SessionLogout action is not available since Openbox was built without "
+#~ "session management support"
+#~ msgstr ""
+#~ "La ago SessionLogout ne estas disponebla, ĉar Openbox estis muntita sen "
+#~ "seancadministrado"
 
-#: openbox/openbox.c:617
-msgid "--config-file requires an argument\n"
-msgstr "--config-file postulas argumenton\n"
+#~ msgid "--config-file requires an argument\n"
+#~ msgstr "--config-file postulas argumenton\n"
 
-#: openbox/session.c:104
 #, c-format
-msgid "Unable to make directory \"%s\": %s"
-msgstr "Ne eblas fari dosierujon \"%s\": %s"
+#~ msgid "Unable to make directory \"%s\": %s"
+#~ msgstr "Ne eblas fari dosierujon \"%s\": %s"
 
-#: openbox/session.c:466
 #, c-format
-msgid "Unable to save the session to \"%s\": %s"
-msgstr "Ne eblas konservi la seancon al \"%s\": %s"
+#~ msgid "Unable to save the session to \"%s\": %s"
+#~ msgstr "Ne eblas konservi la seancon al \"%s\": %s"
 
-#: openbox/session.c:605
 #, c-format
-msgid "Error while saving the session to \"%s\": %s"
-msgstr "Eraro dum konservi la seancon al \"%s\": %s"
+#~ msgid "Error while saving the session to \"%s\": %s"
+#~ msgstr "Eraro dum konservi la seancon al \"%s\": %s"
 
-#: openbox/session.c:842
-msgid "Not connected to a session manager"
-msgstr "Ne konektiĝinta al seancadministrilo"
+#~ msgid "Not connected to a session manager"
+#~ msgstr "Ne konektiĝinta al seancadministrilo"
 
-#: openbox/xerror.c:40
 #, c-format
-msgid "X Error: %s"
-msgstr "X-eraro: %s"
+#~ msgid "X Error: %s"
+#~ msgstr "X-eraro: %s"
 
-msgid "ĉe"
-msgstr "at"
+#~ msgid "ĉe"
+#~ msgstr "at"

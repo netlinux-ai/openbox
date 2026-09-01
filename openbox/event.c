@@ -25,6 +25,7 @@
 #include "actions.h"
 #include "client.h"
 #include "config.h"
+#include "gettext.h"
 #include "screen.h"
 #include "frame.h"
 #include "grab.h"
@@ -44,6 +45,7 @@
 #include "obt/xqueue.h"
 #include "obt/prop.h"
 #include "obt/keyboard.h"
+#include "obrender/theme.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -1053,10 +1055,27 @@ static void event_handle_client(ObClient *client, XEvent *e)
             /* handle special button actions on release */
             if (e->type == ButtonRelease) {
                 if (original_con == OB_FRAME_CONTEXT_OPENBOX_CONFIG) {
-                    g_spawn_command_line_async("obconf", NULL);
+                    GError *err = NULL;
+                    if (!g_spawn_command_line_async(
+                            config_openbox_config_command, &err))
+                    {
+                        g_message(_("Failed to execute \"%s\": %s"),
+                                  config_openbox_config_command,
+                                  err->message);
+                        g_error_free(err);
+                    }
                 } else if (original_con == OB_FRAME_CONTEXT_LAYER) {
-                    /* layer menu will be shown here */
-                    ob_debug("Layer button clicked - menu support TODO");
+                    GravityPoint pos = { { 0, }, };
+                    ObFrame *f = client->frame;
+                    const Rect *allmon =
+                        screen_physical_area_monitor(screen_num_monitors);
+                    gint abs_x = f->area.x + f->bwidth + f->layer_x;
+                    gint abs_y = f->area.y + f->bwidth +
+                        ob_rr_theme->paddingy + 1 + ob_rr_theme->button_size;
+                    pos.x.pos = abs_x - allmon->x;
+                    pos.y.pos = abs_y - allmon->y;
+                    menu_show("client-layer-menu", &pos,
+                              screen_num_monitors, TRUE, TRUE, client);
                 }
             }
         }

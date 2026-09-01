@@ -52,6 +52,7 @@ gboolean config_theme_keepborder;
 guint    config_theme_window_list_icon_size;
 
 gchar   *config_title_layout;
+gchar   *config_openbox_config_command;
 
 gboolean config_animate_iconify;
 
@@ -729,6 +730,10 @@ static void parse_theme(xmlNodePtr node, gpointer d)
             for (d = c+1; *d != '\0'; ++d)
                 if (*c == *d) *d = ' ';
     }
+    if ((n = obt_xml_find_node(node, "configManagerCommand"))) {
+        g_free(config_openbox_config_command);
+        config_openbox_config_command = obt_xml_node_string(n);
+    }
     if ((n = obt_xml_find_node(node, "keepBorder")))
         config_theme_keepborder = obt_xml_node_bool(n);
     if ((n = obt_xml_find_node(node, "animateIconify")))
@@ -1245,6 +1250,7 @@ void config_startup(ObtXmlInst *i)
 
     config_animate_iconify = TRUE;
     config_title_layout = g_strdup("NLIMC");
+    config_openbox_config_command = g_strdup("obconf");
     config_theme_keepborder = TRUE;
     config_theme_window_list_icon_size = 36;
 
@@ -1339,6 +1345,7 @@ void config_shutdown(void)
     g_free(config_theme);
 
     g_free(config_title_layout);
+    g_free(config_openbox_config_command);
 
     RrFontClose(config_font_activewindow);
     RrFontClose(config_font_inactivewindow);

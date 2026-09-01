@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Openbox 3.6.1\n"
 "Report-Msgid-Bugs-To: http://bugzilla.icculus.org\n"
-"POT-Creation-Date: 2018-03-12 14:54+0100\n"
+"POT-Creation-Date: 2014-11-05 16:51+0100\n"
 "PO-Revision-Date: 2018-02-18 15:47+0200\n"
 "Last-Translator: scootergrisen\n"
 "Language-Team: Danish\n"
@@ -40,7 +40,7 @@ msgstr "Udfør"
 msgid "Failed to convert the path \"%s\" from utf8"
 msgstr "Fejl ved konvertering af stien \"%s\" fra utf8"
 
-#: openbox/actions/exit.c:69 openbox/client.c:3675
+#: openbox/actions/exit.c:69 openbox/client.c:3665
 msgid "Cancel"
 msgstr "Afbryd"
 
@@ -64,19 +64,19 @@ msgstr "Er du sikker på at du vil afslutte Openbox?"
 msgid "Exit Openbox"
 msgstr "Afslut Openbox"
 
-#: openbox/client.c:2120
+#: openbox/client.c:2115
 msgid "Unnamed Window"
 msgstr "Unavngivet vindue"
 
-#: openbox/client.c:2135 openbox/client.c:2166
+#: openbox/client.c:2129 openbox/client.c:2160
 msgid "Killing..."
 msgstr "Dræber..."
 
-#: openbox/client.c:2137 openbox/client.c:2168
+#: openbox/client.c:2131 openbox/client.c:2162
 msgid "Not Responding"
 msgstr "Svarer ikke"
 
-#: openbox/client.c:3664
+#: openbox/client.c:3654
 #, c-format
 msgid ""
 "The window \"%s\" does not seem to be responding.  Do you want to force it "
@@ -85,18 +85,18 @@ msgstr ""
 "Vinduet \"%s\" svarer ikke. Vil du udføre tvunget afslutning ved at sende %s "
 "signalet?"
 
-#: openbox/client.c:3666
+#: openbox/client.c:3656
 msgid "End Process"
 msgstr "Afslut proces"
 
-#: openbox/client.c:3670
+#: openbox/client.c:3660
 #, c-format
 msgid ""
 "The window \"%s\" does not seem to be responding.  Do you want to disconnect "
 "it from the X server?"
 msgstr "Vinduet \"%s\" svarer ikke. Vil du frakoble vinduet fra X-serveren?"
 
-#: openbox/client.c:3672
+#: openbox/client.c:3662
 msgid "Disconnect"
 msgstr "Frakoble"
 
@@ -184,17 +184,17 @@ msgstr "_Dekoration til/fra"
 msgid "_Close"
 msgstr "_Luk"
 
-#: openbox/config.c:567
+#: openbox/config.c:563
 #, c-format
 msgid "Invalid context \"%s\" in mouse binding"
 msgstr "Ugyldig kontekst \"%s\" i musebinding"
 
-#: openbox/config.c:949
+#: openbox/config.c:931
 #, c-format
 msgid "Invalid button \"%s\" specified in config file"
 msgstr "Ugyldig tast \"%s\" specificeret i konfigurationsfilen"
 
-#: openbox/config.c:974
+#: openbox/config.c:956
 msgid ""
 "Openbox was compiled without image loading support. Icons in menus will not "
 "be loaded."

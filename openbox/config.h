@@ -152,6 +152,8 @@ extern gchar *config_theme;
 extern gboolean config_theme_keepborder;
 /*! Titlebar button layout */
 extern gchar *config_title_layout;
+/*! Command line to run when the OpenboxConfig titlebar button is clicked */
+extern gchar *config_openbox_config_command;
 /*! Animate windows iconifying and restoring */
 extern gboolean config_animate_iconify;
 /*! Size of icons in focus switching dialogs */

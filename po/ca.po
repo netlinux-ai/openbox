@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Openbox 3.6.1\n"
 "Report-Msgid-Bugs-To: http://bugzilla.icculus.org\n"
-"POT-Creation-Date: 2018-03-12 14:16+0100\n"
+"POT-Creation-Date: 2014-11-05 16:51+0100\n"
 "PO-Revision-Date: 2017-01-04 19:00+0100\n"
 "Last-Translator: Toni Estevez <toni.estevez@gmail.com>\n"
 "Language-Team: catalan\n"
@@ -40,7 +40,7 @@ msgstr "Executa"
 msgid "Failed to convert the path \"%s\" from utf8"
 msgstr "No es pot convertir el camí amb codificació UTF-8 «%s»"
 
-#: openbox/actions/exit.c:69 openbox/client.c:3675
+#: openbox/actions/exit.c:69 openbox/client.c:3665
 msgid "Cancel"
 msgstr "Cancel·la"
 
@@ -64,19 +64,19 @@ msgstr "Segur que voleu sortir de l'Openbox?"
 msgid "Exit Openbox"
 msgstr "Surt de l'Openbox"
 
-#: openbox/client.c:2120
+#: openbox/client.c:2115
 msgid "Unnamed Window"
 msgstr "Finestra sense nom"
 
-#: openbox/client.c:2135 openbox/client.c:2166
+#: openbox/client.c:2129 openbox/client.c:2160
 msgid "Killing..."
 msgstr "S'està finalitzant..."
 
-#: openbox/client.c:2137 openbox/client.c:2168
+#: openbox/client.c:2131 openbox/client.c:2162
 msgid "Not Responding"
 msgstr "No està responent"
 
-#: openbox/client.c:3664
+#: openbox/client.c:3654
 #, c-format
 msgid ""
 "The window \"%s\" does not seem to be responding.  Do you want to force it "
@@ -85,11 +85,11 @@ msgstr ""
 "Sembla que la finestra «%s» no respon. Voleu forçar-la a tancar-se enviant "
 "el senyal %s?"
 
-#: openbox/client.c:3666
+#: openbox/client.c:3656
 msgid "End Process"
 msgstr "Finalitza el procés"
 
-#: openbox/client.c:3670
+#: openbox/client.c:3660
 #, c-format
 msgid ""
 "The window \"%s\" does not seem to be responding.  Do you want to disconnect "
@@ -98,7 +98,7 @@ msgstr ""
 "Sembla que la finestra «%s» no respon. Voleu desconnectar-la del servidor "
 "gràfic?"
 
-#: openbox/client.c:3672
+#: openbox/client.c:3662
 msgid "Disconnect"
 msgstr "Desconnecta"
 
@@ -186,17 +186,17 @@ msgstr "Treu la _decoració"
 msgid "_Close"
 msgstr "_Tanca"
 
-#: openbox/config.c:567
+#: openbox/config.c:563
 #, c-format
 msgid "Invalid context \"%s\" in mouse binding"
 msgstr "El context «%s» especificat a l'assignació de ratolí no és vàlid"
 
-#: openbox/config.c:949
+#: openbox/config.c:931
 #, c-format
 msgid "Invalid button \"%s\" specified in config file"
 msgstr "El botó «%s» especificat al fitxer de configuració no és vàlid"
 
-#: openbox/config.c:974
+#: openbox/config.c:956
 msgid ""
 "Openbox was compiled without image loading support. Icons in menus will not "
 "be loaded."

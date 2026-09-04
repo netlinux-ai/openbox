@@ -42,7 +42,7 @@
                   'Active' - where the active window is -->
   </placement>
   <theme>
-    <name>Clearlooks-3.4</name>
+    <name>Bear2-Graham</name>
     <titleLayout>NDOYLSIMC</titleLayout>
     <!--
       available characters are NDLSIMCOY, each can occur at most once.
@@ -58,6 +58,8 @@
   -->
     <configManagerCommand>/Data/obconf/_local-install/bin/obconf</configManagerCommand>
     <!-- command line run when the 'O' titlebar button is clicked. -->
+    <themeEditorCommand>/Data/obtheme/_local-install/bin/obtheme</themeEditorCommand>
+    <!-- command line run when the 'Edit Theme' button is clicked in obconf. -->
     <keepBorder>no</keepBorder>
     <animateIconify>no</animateIconify>
     <font place="ActiveWindow">

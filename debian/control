@@ -1,16 +1,32 @@
 Source: openbox
 Section: x11
 Priority: optional
-Maintainer: Dana Jansens <danakj@orodu.net>
-Build-Depends: debhelper (>= 5), coreutils, sed, autotools-dev, gcc, automake1.9, autoconf, libtool, pkg-config, libpango1.0-dev, libglib2.0-dev, libxml2-dev, libxcursor-dev, libstartup-notification0-dev, xlibs-dev, libxinerama-dev, libxft2-dev
-Standards-Version: 3.7.2
+Maintainer: NetLinux <info@netlinux.org>
+Homepage: http://openbox.org/
+Build-Depends: debhelper-compat (= 13), pkg-config, libpango1.0-dev, libglib2.0-dev, libxml2-dev, libxcursor-dev, libstartup-notification0-dev, libx11-dev, libxinerama-dev, libxft-dev
+Standards-Version: 4.5.0
+Rules-Requires-Root: no
 
 Package: openbox
-Architecture: i386
-Depends: libc6, libglib2.0-0, libxcursor1, libx11-6, libpango1.0-0, libice6, libsm6, libxext6, libxinerama1, libxml2, libstartup-notification0, libxft2
-Recommends: obconf, ttf-bitstream-vera
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: obconf, obtheme, ttf-liberation
 Suggests: menu, x-display-manager, ksmserver | gnome-session, kdm | gdm
 Conflicts: menu (<< 2.1.12)
 Provides: x-window-manager
 Description: A minimalistic, highly configurable, next generation window manager with extensive standards support.
+ Openbox is a highly configurable, next generation window manager with
+ extensive standards support. The visual appearance of Openbox is
+ extensible through the use of themes, which can be easily created and
+ customized to suit the user's needs.
+ .
  http://openbox.org/
+
+Package: openbox-dev
+Architecture: any
+Section: libdevel
+Depends: openbox (= ${binary:Version}), ${misc:Depends}
+Description: Development files for Openbox
+ This package contains the development files and header files for the
+ Openbox window manager libraries (libobrender and libobt) required
+ for developing Openbox themes and tools.

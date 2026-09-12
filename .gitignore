@@ -113,3 +113,13 @@ obt/tests/ddtest
 obt/tests/linktest
 obt/tests/watchtest
 obt/obt_unittests
+/debian/.debhelper/
+/debian/*.debhelper.log
+/debian/*.substvars
+/debian/debhelper-build-stamp
+/debian/autoreconf.before
+/debian/autoreconf.after
+/debian/files
+/debian/openbox/
+/debian/openbox-dev/
+/debian/tmp/

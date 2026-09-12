@@ -1,0 +1,7 @@
+openbox (3.7-1netlinux1~resolute1) resolute; urgency=medium
+
+  * Local build from netlinux branch (post-GHA-sunset manual publish).
+  * Includes config/layer titlebar button work, themeEditorCommand
+    support, and modernized debhelper-13 packaging.
+
+ -- NetLinux <graham@netlinux.co.uk>  Sat, 12 Sep 2026 12:00:00 +0100

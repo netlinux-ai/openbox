@@ -12,8 +12,9 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: obconf, obtheme, ttf-liberation
 Suggests: menu, x-display-manager, ksmserver | gnome-session, kdm | gdm
-Conflicts: menu (<< 2.1.12)
-Provides: x-window-manager
+Conflicts: menu (<< 2.1.12), libobrender32, libobt2
+Replaces: libobrender32, libobt2
+Provides: x-window-manager, libobrender32, libobt2
 Description: A minimalistic, highly configurable, next generation window manager with extensive standards support.
  Openbox is a highly configurable, next generation window manager with
  extensive standards support. The visual appearance of Openbox is

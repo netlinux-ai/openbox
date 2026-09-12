@@ -1,0 +1,4 @@
+usr/include/*
+usr/lib/*/libobrender.so
+usr/lib/*/libobt.so
+usr/lib/*/pkgconfig/*

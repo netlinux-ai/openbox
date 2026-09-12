@@ -1,0 +1,14 @@
+etc/xdg/openbox
+usr/bin/*
+usr/lib/*/libobrender.so.*
+usr/lib/*/libobt.so.*
+usr/libexec/*
+usr/share/applications/*
+usr/share/gnome/*
+usr/share/gnome-session/*
+usr/share/locale/*
+usr/share/man/*
+usr/share/doc/openbox/*
+usr/share/pixmaps/*
+usr/share/themes/*
+usr/share/xsessions/*

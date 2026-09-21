@@ -199,6 +199,9 @@ struct _ObFrame
     gboolean  iconify_hover;
     gboolean  openbox_config_hover;
     gboolean  layer_hover;
+    /*! Pending g_timeout_add() id for opening the layer menu after
+        hovering the layer button; 0 when none is pending. */
+    guint     layer_menu_timer;
 
     gboolean  focused;
     gboolean  need_render;

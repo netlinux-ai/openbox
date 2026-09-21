@@ -963,6 +963,56 @@ static gboolean *context_to_button(ObFrame *f, ObFrameContext con, gboolean pres
     }
 }
 
+/*! Positions and shows the layer menu for client, exactly where the
+    click handler used to place it. */
+static void layer_menu_open(ObClient *client)
+{
+    GravityPoint pos = { { 0, }, };
+    ObFrame *f = client->frame;
+    const Rect *allmon = screen_physical_area_monitor(screen_num_monitors);
+    gint abs_x = f->area.x + f->bwidth + f->layer_x;
+    gint abs_y = f->area.y + f->bwidth +
+        ob_rr_theme->paddingy + 1 + ob_rr_theme->button_size;
+
+    pos.x.pos = abs_x - allmon->x;
+    pos.y.pos = abs_y - allmon->y;
+    menu_show("client-layer-menu", &pos, screen_num_monitors, TRUE, TRUE,
+              client);
+}
+
+static gboolean layer_menu_show_timeout(gpointer data)
+{
+    ObClient *client = data;
+
+    client->frame->layer_menu_timer = 0;
+    layer_menu_open(client);
+    return FALSE; /* one-shot */
+}
+
+/*! Call when the pointer enters the layer button; opens the menu after
+    config_submenu_show_delay, the same delay used for hovering open a
+    submenu elsewhere in Openbox. */
+static void layer_menu_hover_begin(ObClient *client)
+{
+    ObFrame *f = client->frame;
+
+    if (f->layer_menu_timer)
+        return;
+    f->layer_menu_timer = g_timeout_add(config_submenu_show_delay,
+                                        layer_menu_show_timeout, client);
+}
+
+/*! Call when the pointer leaves the layer button (or anywhere else that
+    should cancel a pending hover-open); no-op if the menu already opened
+    or no hover is pending. */
+static void layer_menu_hover_end(ObFrame *f)
+{
+    if (f->layer_menu_timer) {
+        g_source_remove(f->layer_menu_timer);
+        f->layer_menu_timer = 0;
+    }
+}
+
 static gboolean more_client_message_event(Window window, Atom msgtype)
 {
     ObtXQueueWindowMessage wm;
@@ -1064,19 +1114,9 @@ static void event_handle_client(ObClient *client, XEvent *e)
                                   err->message);
                         g_error_free(err);
                     }
-                } else if (original_con == OB_FRAME_CONTEXT_LAYER) {
-                    GravityPoint pos = { { 0, }, };
-                    ObFrame *f = client->frame;
-                    const Rect *allmon =
-                        screen_physical_area_monitor(screen_num_monitors);
-                    gint abs_x = f->area.x + f->bwidth + f->layer_x;
-                    gint abs_y = f->area.y + f->bwidth +
-                        ob_rr_theme->paddingy + 1 + ob_rr_theme->button_size;
-                    pos.x.pos = abs_x - allmon->x;
-                    pos.y.pos = abs_y - allmon->y;
-                    menu_show("client-layer-menu", &pos,
-                              screen_num_monitors, TRUE, TRUE, client);
                 }
+                /* the layer menu opens on hover now, see
+                   layer_menu_hover_begin() */
             }
         }
         break;
@@ -1107,6 +1147,7 @@ static void event_handle_client(ObClient *client, XEvent *e)
                 frame_adjust_state(client->frame);
             }
             snap_hover_end();
+            layer_menu_hover_end(client->frame);
             break;
         default:
             but = context_to_button(client->frame, con, FALSE);
@@ -1118,6 +1159,10 @@ static void event_handle_client(ObClient *client, XEvent *e)
                 snap_hover_begin(client);
             else if (con != OB_FRAME_CONTEXT_MAXIMIZE)
                 snap_hover_end();
+            if (con == OB_FRAME_CONTEXT_LAYER && !pb)
+                layer_menu_hover_begin(client);
+            else if (con != OB_FRAME_CONTEXT_LAYER)
+                layer_menu_hover_end(client->frame);
             break;
         }
         break;
@@ -1146,6 +1191,7 @@ static void event_handle_client(ObClient *client, XEvent *e)
                     client->frame->layer_press = FALSE;
             }
             snap_hover_end();
+            layer_menu_hover_end(client->frame);
             break;
         case OB_FRAME_CONTEXT_FRAME:
             /* When the mouse leaves an animating window, don't use the
@@ -1185,6 +1231,8 @@ static void event_handle_client(ObClient *client, XEvent *e)
             }
             if (con == OB_FRAME_CONTEXT_MAXIMIZE)
                 snap_hover_end();
+            else if (con == OB_FRAME_CONTEXT_LAYER)
+                layer_menu_hover_end(client->frame);
             break;
         }
         break;
@@ -1242,6 +1290,10 @@ static void event_handle_client(ObClient *client, XEvent *e)
                 snap_hover_begin(client);
             else
                 snap_hover_end();
+            if (con == OB_FRAME_CONTEXT_LAYER)
+                layer_menu_hover_begin(client);
+            else
+                layer_menu_hover_end(client->frame);
             break;
         }
         break;

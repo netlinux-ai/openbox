@@ -238,6 +238,9 @@ void frame_free(ObFrame *self)
 {
     free_theme_statics(self);
 
+    if (self->layer_menu_timer)
+        g_source_remove(self->layer_menu_timer);
+
     XDestroyWindow(obt_display, self->window);
     if (self->colormap)
         XFreeColormap(obt_display, self->colormap);

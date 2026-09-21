@@ -1,3 +1,11 @@
+openbox (3.7-2netlinux1~resolute1) resolute; urgency=medium
+
+  * Layer button (always-on-top/normal/always-on-bottom) now opens its
+    menu on hover instead of click, using the existing
+    config_submenu_show_delay convention.
+
+ -- NetLinux <graham@netlinux.co.uk>  Mon, 21 Sep 2026 12:00:00 +0100
+
 openbox (3.7-1netlinux1~resolute1) resolute; urgency=medium
 
   * Local build from netlinux branch (post-GHA-sunset manual publish).

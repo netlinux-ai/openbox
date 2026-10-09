@@ -28,11 +28,30 @@
 #include "obrender/theme.h"
 #include "obt/display.h"
 
-/* Pointer tracking for auto-hiding titlebars is done per-client: each
-   client window has PointerMotionMask selected on it (see
-   frame_grab_client()), so we are told when the pointer is over the client
-   area and can tell when it reaches the top edge (where the titlebar would
-   sit). No global setup or polling is required. */
+/* Design.
+  
+   Auto-hiding titlebars are revealed when the pointer reaches a window's top
+   edge. Pointer tracking is done per-client: each client window has
+   PointerMotionMask selected on it (see frame_grab_client()), so we are told
+   when the pointer is over the client area and can tell when it reaches the
+   top edge (where the titlebar would sit, overlaid on the client). The
+   titlebar is hidden again (after a short delay) when the pointer leaves the
+   top strip or the frame entirely. No global setup or polling is required.
+  
+   Why motion rather than Enter/Leave on the client? An Enter/Leave on the
+   client window fires when the pointer crosses into/out of the whole client
+   area, not just the top strip, so it cannot by itself tell us the pointer is
+   in the titlebar band. A dedicated top-strip window would be needed, which
+   would have to be input-only (to stay invisible); some X servers/VNC setups
+   deliver no pointer events to input-only windows at all. Selecting motion on
+   the client is the simplest approach that works across ordinary X servers.
+  
+   Testing caveat: some minimal/virtual X servers (e.g. the Xvnc used for CI
+   here) do NOT deliver MotionNotify for XWarpPointer moves, deliver no
+   pointer events to input-only windows, and lack a working XTEST extension.
+   On such a display the reveal cannot be triggered by automation, even though
+   the code is correct. Verify on a display with a working pointer-motion
+   path (a normal local or full VNC X server with XTEST). */
 
 void autohide_startup(gboolean reconfig)
 {

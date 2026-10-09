@@ -30,17 +30,31 @@
 #include <stdarg.h>
 
 /* TEMPORARY diagnostic logging (remove before final). */
-static void ahlog(const char *fmt, ...)
+static void ahlog_v(const char *fmt, va_list ap)
 {
     static FILE *f = NULL;
-    va_list ap;
     if (!f) {
         f = fopen("/tmp/ob_ahd.log", "a");
         if (!f) return;
         setvbuf(f, NULL, _IOLBF, 0);
     }
-    va_start(ap, fmt);
     vfprintf(f, fmt, ap);
+}
+
+static void ahlog(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    ahlog_v(fmt, ap);
+    va_end(ap);
+}
+
+/* TEMPORARY: public entry so event.c can log into the same file. */
+void ahlog_ext(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    ahlog_v(fmt, ap);
     va_end(ap);
 }
 

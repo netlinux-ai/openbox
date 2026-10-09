@@ -47,7 +47,10 @@ void autohide_frame_leave(struct _ObFrame *f);
 void autohide_pointer_moved(gint x_root, gint y_root);
 
 /*! A client's state has changed (mapped, maximized, shaded, moved of desktop,
-  unmanaged, ...). Hide its titlebar if it is no longer eligible. */
+   unmanaged, ...). Hide its titlebar if it is no longer eligible. */
 void autohide_client_update(struct _ObClient *c);
+
+/* TEMPORARY diagnostic logging (remove before final). */
+void ahlog_ext(const char *fmt, ...);
 
 #endif

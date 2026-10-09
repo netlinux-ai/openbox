@@ -509,6 +509,15 @@ static void event_process(const XEvent *ec, gpointer data)
        pointer is at. */
     if (e->type == MotionNotify)
         autohide_pointer_moved(e->xmotion.x_root, e->xmotion.y_root);
+    else if (e->type == EnterNotify || e->type == LeaveNotify ||
+             e->type == ButtonPress)
+    {
+        extern void ahlog_ext(const char *fmt, ...);
+        ahlog_ext("EV %s win=0x%lx\n",
+                  e->type == EnterNotify ? "Enter" :
+                  e->type == LeaveNotify ? "Leave" : "ButtonPress",
+                  (unsigned long)e->xany.window);
+    }
 
     event_set_curtime(e);
     event_curserial = e->xany.serial;

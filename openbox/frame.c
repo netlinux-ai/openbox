@@ -1064,6 +1064,14 @@ void frame_grab_client(ObFrame *self)
             self->client_event_mask = cwa.your_event_mask;
             XSelectInput(obt_display, self->client->window,
                          cwa.your_event_mask | PointerMotionMask);
+            fprintf(stderr,
+                    "[autohide] grab client=0x%lx orig_mask=0x%lx -> +motion\n",
+                    (unsigned long)self->client->window,
+                    (unsigned long)cwa.your_event_mask);
+        } else {
+            fprintf(stderr,
+                    "[autohide] grab client=0x%lx XGetWindowAttributes FAILED\n",
+                    (unsigned long)self->client->window);
         }
     }
 

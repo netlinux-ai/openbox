@@ -50,7 +50,4 @@ void autohide_pointer_moved(gint x_root, gint y_root);
    unmanaged, ...). Hide its titlebar if it is no longer eligible. */
 void autohide_client_update(struct _ObClient *c);
 
-/* TEMPORARY diagnostic logging (remove before final). */
-void ahlog_ext(const char *fmt, ...);
-
 #endif

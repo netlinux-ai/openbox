@@ -27,36 +27,6 @@
 #include "openbox.h"
 #include "obrender/theme.h"
 #include "obt/display.h"
-#include <stdarg.h>
-
-/* TEMPORARY diagnostic logging (remove before final). */
-static void ahlog_v(const char *fmt, va_list ap)
-{
-    static FILE *f = NULL;
-    if (!f) {
-        f = fopen("/tmp/ob_ahd.log", "a");
-        if (!f) return;
-        setvbuf(f, NULL, _IOLBF, 0);
-    }
-    vfprintf(f, fmt, ap);
-}
-
-static void ahlog(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    ahlog_v(fmt, ap);
-    va_end(ap);
-}
-
-/* TEMPORARY: public entry so event.c can log into the same file. */
-void ahlog_ext(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    ahlog_v(fmt, ap);
-    va_end(ap);
-}
 
 /* Pointer tracking for auto-hiding titlebars is done per-client: each
    client window has PointerMotionMask selected on it (see
@@ -113,14 +83,8 @@ static gboolean tb_hide_timeout(gpointer data)
 
 void autohide_show(ObFrame *f)
 {
-    if (!autohide_active_for(f) || f->tb_shown) {
-        ahlog("SHOW skip frame=0x%lx active=%d shown=%d\n",
-              (unsigned long)f->window, (int)autohide_active_for(f),
-              (int)f->tb_shown);
+    if (!autohide_active_for(f) || f->tb_shown)
         return;
-    }
-    ahlog("SHOW frame=0x%lx title=0x%lx\n",
-          (unsigned long)f->window, (unsigned long)f->title);
 
     /* the titlebar overlays the top edge of the client area */
     XMoveResizeWindow(obt_display, f->title,
@@ -212,16 +176,8 @@ void autohide_pointer_moved(gint x_root, gint y_root)
                        x_root < c->frame->area.x + c->frame->area.width);
             int iny = (y_root >= top &&
                        y_root < top + ob_rr_theme->title_height);
-            ahlog("MOVE %d %d client=0x%lx act=%d inx=%d iny=%d "
-                  "area=(%d,%d %dx%d) th=%d\n",
-                  x_root, y_root, (unsigned long)c->window, (int)act,
-                  inx, iny, (int)c->frame->area.x, (int)c->frame->area.y,
-                  (int)c->frame->area.width, (int)c->frame->area.height,
-                  (int)ob_rr_theme->title_height);
             if (act && inx && iny)
                 target = c;
-        } else {
-            ahlog("MOVE %d %d client=(none)\n", x_root, y_root);
         }
     }
 

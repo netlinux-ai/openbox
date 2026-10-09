@@ -32,6 +32,7 @@
 #include "menu.h"
 #include "prompt.h"
 #include "snap.h"
+#include "autohide.h"
 #include "menuframe.h"
 #include "keyboard.h"
 #include "mouse.h"
@@ -501,6 +502,13 @@ static void event_process(const XEvent *ec, gpointer data)
     }
     else
         dockapp = dock_find_dockapp(window);
+
+    /* auto-hiding titlebars are driven by the pointer's position; each client
+       window reports motion for its own area (see frame_grab_client()), and
+       the MotionNotify hook here tells autohide.c which window's top edge the
+       pointer is at. */
+    if (e->type == MotionNotify)
+        autohide_pointer_moved(e->xmotion.x_root, e->xmotion.y_root);
 
     event_set_curtime(e);
     event_curserial = e->xany.serial;
@@ -1173,6 +1181,9 @@ static void event_handle_client(ObClient *client, XEvent *e)
         case OB_FRAME_CONTEXT_TITLEBAR:
         case OB_FRAME_CONTEXT_TLCORNER:
         case OB_FRAME_CONTEXT_TRCORNER:
+            /* the pointer left the titlebar (the top edge strip); begin hiding
+               the auto-shown titlebar after the configured delay */
+            autohide_frame_leave(client->frame);
             /* we've left the button area inside the titlebar */
             client->frame->max_hover =
                 client->frame->desk_hover =
@@ -1194,6 +1205,11 @@ static void event_handle_client(ObClient *client, XEvent *e)
             layer_menu_hover_end(client->frame);
             break;
         case OB_FRAME_CONTEXT_FRAME:
+            /* the pointer left the whole window; if a titlebar is being
+               auto-shown, this is how we learn it should be hidden */
+            if (e->type == LeaveNotify)
+                autohide_frame_leave(client->frame);
+
             /* When the mouse leaves an animating window, don't use the
                corresponding enter events. Pretend like the animating window
                doesn't even exist..! */

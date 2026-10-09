@@ -43,6 +43,7 @@
 #include "ping.h"
 #include "prompt.h"
 #include "snap.h"
+#include "autohide.h"
 #include "gettext.h"
 #include "obrender/render.h"
 #include "obrender/theme.h"
@@ -330,6 +331,7 @@ gint main(gint argc, gchar **argv)
             menu_startup(reconfigure);
             prompt_startup(reconfigure);
             snap_startup(reconfigure);
+            autohide_startup(reconfigure);
 
             if (!reconfigure) {
                 /* do this after everything is started so no events will get
@@ -393,6 +395,7 @@ gint main(gint argc, gchar **argv)
             if (!reconfigure)
                 window_unmanage_all();
 
+            autohide_shutdown(reconfigure);
             snap_shutdown(reconfigure);
             prompt_shutdown(reconfigure);
             menu_shutdown(reconfigure);

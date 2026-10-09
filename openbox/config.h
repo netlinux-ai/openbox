@@ -246,6 +246,15 @@ extern guint config_snap_layouts_delay;
 /*! The layouts offered by the popup, a list of ObSnapLayout */
 extern GSList *config_snap_layouts_list;
 
+/*! Automatically hide window titlebars. When this is on, a window's titlebar
+  is hidden and its client area fills to the top edge; the titlebar is then
+  revealed as an overlay on top of the client area whenever the pointer hovers
+  the window's top edge, and auto-hides again once the pointer leaves. */
+extern gboolean config_autohide_titlebar;
+/*! Milliseconds a revealed titlebar stays visible after the pointer leaves its
+  top edge before it auto-hides. */
+extern guint config_autohide_titlebar_hide_delay;
+
 void config_startup(ObtXmlInst *i);
 void config_shutdown(void);
 

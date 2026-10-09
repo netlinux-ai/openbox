@@ -19,6 +19,7 @@
 
 #include "frame.h"
 #include "client.h"
+#include "autohide.h"
 #include "openbox.h"
 #include "grab.h"
 #include "debug.h"
@@ -241,6 +242,9 @@ void frame_free(ObFrame *self)
     if (self->layer_menu_timer)
         g_source_remove(self->layer_menu_timer);
 
+    if (self->tb_hide_timer)
+        g_source_remove(self->tb_hide_timer);
+
     XDestroyWindow(obt_display, self->window);
     if (self->colormap)
         XFreeColormap(obt_display, self->colormap);
@@ -395,7 +399,13 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                   self->cbwidth_b +
                   (!self->max_horz || !self->max_vert ? self->bwidth : 0));
 
-        if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
+        if (autohide_active_for(self)) {
+            /* auto-hiding titlebars: reserve no titlebar space, so the client
+               fills to the top edge. The titlebar is drawn as an overlay on
+               top of the client area when it is revealed (see autohide.c). */
+            self->size.top = 0;
+        }
+        else if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
             self->size.top += ob_rr_theme->title_height + self->bwidth;
         else if (self->max_horz && self->max_vert) {
             /* A maximized and undecorated window needs a border on the
@@ -571,12 +581,32 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
             }
 
             if (self->decorations & OB_FRAME_DECOR_TITLEBAR) {
-                XMoveResizeWindow(obt_display, self->title,
-                                  (self->max_horz ? 0 : self->bwidth),
-                                  self->bwidth,
-                                  self->width, ob_rr_theme->title_height);
+                if (autohide_active_for(self)) {
+                    /* the titlebar is an overlay over the client's top edge.
+                       its map state is driven by autohide_show/hide, so just
+                       reposition it and keep it in the current state (this runs
+                       on every resize, e.g. while dragging, so we must not
+                       force it hidden here). */
+                    XMoveResizeWindow(obt_display, self->title,
+                                      self->bwidth, 0,
+                                      self->width, ob_rr_theme->title_height);
+                    if (self->tb_shown)
+                        XMapWindow(obt_display, self->title);
+                    else
+                        XUnmapWindow(obt_display, self->title);
+                } else {
+                    self->tb_shown = FALSE;
+                    if (self->tb_hide_timer) {
+                        g_source_remove(self->tb_hide_timer);
+                        self->tb_hide_timer = 0;
+                    }
+                    XMoveResizeWindow(obt_display, self->title,
+                                      (self->max_horz ? 0 : self->bwidth),
+                                      self->bwidth,
+                                      self->width, ob_rr_theme->title_height);
 
-                XMapWindow(obt_display, self->title);
+                    XMapWindow(obt_display, self->title);
+                }
 
                 if (self->decorations & OB_FRAME_DECOR_GRIPS) {
                     XMoveResizeWindow(obt_display, self->topresize,
@@ -1023,6 +1053,20 @@ void frame_grab_client(ObFrame *self)
        req's) the ButtonPress is to catch clicks on the client border */
     XSelectInput(obt_display, self->window, FRAME_EVENTMASK);
 
+    /* for auto-hiding titlebars we need to know when the pointer is over the
+       client area (the top edge of which is where the titlebar would sit). The
+       client window does not report pointer motion to us by default, so add
+       PointerMotionMask to it, preserving whatever mask the client already had.
+       We restore the original mask in frame_release_client(). */
+    {
+        XWindowAttributes cwa;
+        if (XGetWindowAttributes(obt_display, self->client->window, &cwa)) {
+            self->client_event_mask = cwa.your_event_mask;
+            XSelectInput(obt_display, self->client->window,
+                         cwa.your_event_mask | PointerMotionMask);
+        }
+    }
+
     /* set all the windows for the frame in the window_map */
     window_add(&self->window, CLIENT_AS_WINDOW(self->client));
     window_add(&self->backback, CLIENT_AS_WINDOW(self->client));
@@ -1088,6 +1132,10 @@ void frame_release_client(ObFrame *self)
     /* if there was any animation going on, kill it */
     if (self->iconify_animation_timer)
         g_source_remove(self->iconify_animation_timer);
+
+    /* undo the pointer-motion tracking we added to the client for
+       auto-hiding titlebars (see frame_grab_client()) */
+    XSelectInput(obt_display, self->client->window, self->client_event_mask);
 
     /* check if the app has already reparented its window away */
     if (!xqueue_exists_local(find_reparent, self)) {

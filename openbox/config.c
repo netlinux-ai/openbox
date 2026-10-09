@@ -109,6 +109,9 @@ gboolean config_snap_layouts;
 guint    config_snap_layouts_delay;
 GSList  *config_snap_layouts_list;
 
+gboolean config_autohide_titlebar;
+guint    config_autohide_titlebar_hide_delay;
+
 gint     config_resist_win;
 gint     config_resist_edge;
 
@@ -1069,6 +1072,18 @@ static void config_snap_layouts_defaults(void)
     }
 }
 
+static void parse_autohide_titlebar(xmlNodePtr node, gpointer d)
+{
+    xmlNodePtr n;
+
+    node = node->children;
+
+    if ((n = obt_xml_find_node(node, "enabled")))
+        config_autohide_titlebar = obt_xml_node_bool(n);
+    if ((n = obt_xml_find_node(node, "hideDelay")))
+        config_autohide_titlebar_hide_delay = MAX(0, obt_xml_node_int(n));
+}
+
 static void parse_snap_layouts(xmlNodePtr node, gpointer d)
 {
     xmlNodePtr n, l;
@@ -1332,6 +1347,11 @@ void config_startup(ObtXmlInst *i)
     config_snap_layouts_defaults();
 
     obt_xml_register(i, "snapLayouts", parse_snap_layouts, NULL);
+
+    config_autohide_titlebar = FALSE;
+    config_autohide_titlebar_hide_delay = 1000;
+
+    obt_xml_register(i, "autoHideTitlebar", parse_autohide_titlebar, NULL);
 
     config_per_app_settings = NULL;
 

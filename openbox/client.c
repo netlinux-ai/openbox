@@ -26,6 +26,7 @@
 #include "ping.h"
 #include "place.h"
 #include "frame.h"
+#include "autohide.h"
 #include "session.h"
 #include "event.h"
 #include "grab.h"
@@ -2873,6 +2874,8 @@ void client_showhide(ObClient *self)
 {
     if (!client_show(self))
         client_hide(self);
+
+    autohide_client_update(self);
 }
 
 gboolean client_normal(ObClient *self) {
@@ -3467,6 +3470,8 @@ void client_fullscreen(ObClient *self, gboolean fs)
         /* try focus us when we go into fullscreen mode */
         client_focus(self);
     }
+
+    autohide_client_update(self);
 }
 
 static void client_iconify_recursive(ObClient *self,
@@ -3606,6 +3611,8 @@ void client_maximize(ObClient *self, gboolean max, gint dir)
 
     client_setup_decor_and_functions(self, FALSE);
     client_move_resize(self, x, y, w, h);
+
+    autohide_client_update(self);
 }
 
 void client_shade(ObClient *self, gboolean shade)
@@ -3619,6 +3626,8 @@ void client_shade(ObClient *self, gboolean shade)
     client_change_wm_state(self); /* the window is being hidden/shown */
     /* resize the frame to just the titlebar */
     frame_adjust_area(self->frame, FALSE, TRUE, FALSE);
+
+    autohide_client_update(self);
 }
 
 static void client_ping_event(ObClient *self, gboolean dead)
@@ -3859,6 +3868,8 @@ void client_set_desktop(ObClient *self, guint target,
     client_set_desktop_recursive(self, target, donthide, dontraise);
 
     focus_cycle_addremove(NULL, TRUE);
+
+    autohide_client_update(self);
 }
 
 gboolean client_is_direct_child(ObClient *parent, ObClient *child)

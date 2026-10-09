@@ -203,6 +203,16 @@ struct _ObFrame
         hovering the layer button; 0 when none is pending. */
     guint     layer_menu_timer;
 
+    /*! For auto-hiding titlebars: is this frame's titlebar currently
+        revealed as an overlay on top of the client area? */
+    gboolean  tb_shown;
+    /*! Pending g_timeout_add() id for auto-hiding the titlebar once the
+        pointer has left its top edge; 0 when none is pending. */
+    guint     tb_hide_timer;
+    /*! The client window's event mask as it was before auto-hiding titlebars
+        added pointer-motion tracking to it; used to restore it on unmanage. */
+    gulong    client_event_mask;
+
     gboolean  focused;
     gboolean  need_render;
 

@@ -765,6 +765,17 @@
       <zone x="75" y="75" width="25" height="25"/>
     </layout>
   </snapLayouts>
+  <autoHideTitlebar>
+    <!-- When enabled, a window's titlebar is hidden and the client area fills
+       to the top edge. The titlebar is revealed as an overlay on top of the
+       client area whenever the pointer hovers the window's top edge, and it
+       auto-hides again once the pointer has left for hideDelay milliseconds.
+       Maximized, fullscreen, shaded and undecorated windows are unaffected. -->
+    <enabled>yes</enabled>
+    <!-- how long, in milliseconds, a revealed titlebar stays visible after the
+       pointer leaves its top edge before it auto-hides -->
+    <hideDelay>1000</hideDelay>
+  </autoHideTitlebar>
   <applications>
     <!--
   # this is an example with comments through out. use these to make your

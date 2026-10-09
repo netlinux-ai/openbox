@@ -238,6 +238,8 @@ openbox_openbox_SOURCES = \
 	openbox/actions/unfocus.c \
 	openbox/actions.c \
 	openbox/actions.h \
+	openbox/autohide.c \
+	openbox/autohide.h \
 	openbox/client.c \
 	openbox/client.h \
 	openbox/client_list_menu.c \

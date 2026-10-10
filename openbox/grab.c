@@ -27,6 +27,7 @@
 
 #include <glib.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 
 #define GRAB_PTR_MASK (ButtonPressMask | ButtonReleaseMask | PointerMotionMask)
 #define GRAB_KEY_MASK (KeyPressMask | KeyReleaseMask)
@@ -106,6 +107,23 @@ gboolean grab_keyboard_full(gboolean grab)
     return ret;
 }
 
+/*! Tell a GL compositor (metisse/composite) whether Openbox itself holds the
+  pointer (a move, resize, tilt or menu). While it does, the compositor must
+  not remap the pointer onto tilted windows, since Openbox is reading raw
+  pointer coordinates. */
+static void set_metisse_grab(gboolean on)
+{
+    static Atom a = None;
+    if (a == None)
+        a = XInternAtom(obt_display, "_METISSE_GRAB", False);
+    if (on) {
+        gulong one = 1;
+        XChangeProperty(obt_display, obt_root(ob_screen), a, XA_CARDINAL, 32,
+                        PropModeReplace, (guchar*)&one, 1);
+    } else
+        XDeleteProperty(obt_display, obt_root(ob_screen), a);
+}
+
 gboolean grab_pointer_full(gboolean grab, gboolean owner_events,
                            gboolean confine, ObCursor cur)
 {
@@ -120,13 +138,16 @@ gboolean grab_pointer_full(gboolean grab, gboolean owner_events,
                                ob_cursor(cur), event_time()) == Success;
             if (!ret)
                 --pgrabs;
-            else
+            else {
                 grab_time = event_time();
+                set_metisse_grab(TRUE);
+            }
         } else
             ret = TRUE;
     } else if (pgrabs > 0) {
         if (--pgrabs == 0) {
             XUngrabPointer(obt_display, ungrab_time());
+            set_metisse_grab(FALSE);
         }
         ret = TRUE;
     }

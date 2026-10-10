@@ -375,6 +375,12 @@
       <mousebind button="A-Right" action="Drag">
         <action name="Resize"/>
       </mousebind>
+      <mousebind button="A-S-Left" action="Drag">
+        <action name="Tilt"/>
+      </mousebind>
+      <mousebind button="A-S-Middle" action="Click">
+        <action name="Untilt"/>
+      </mousebind>
       <mousebind button="A-Middle" action="Press">
         <action name="Lower"/>
         <action name="FocusToBottom"/>

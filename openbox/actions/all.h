@@ -14,6 +14,7 @@ void action_cyclewindows_startup(void);
 void action_breakchroot_startup(void);
 void action_close_startup(void);
 void action_move_startup(void);
+void action_tilt_startup(void);
 void action_focus_startup(void);
 void action_raise_startup(void);
 void action_lower_startup(void);

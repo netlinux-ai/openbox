@@ -222,6 +222,7 @@ openbox_openbox_SOURCES = \
 	openbox/actions/maximize.c \
 	openbox/actions/move.c \
 	openbox/actions/moverelative.c \
+	openbox/actions/tilt.c \
 	openbox/actions/moveresizeto.c \
 	openbox/actions/movetoedge.c \
 	openbox/actions/omnipresent.c \

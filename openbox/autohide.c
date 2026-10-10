@@ -28,15 +28,31 @@
 #include "obrender/theme.h"
 #include "obt/display.h"
 
+/* How far down from the very top edge of the client area the pointer must be
+   to reveal the titlebar. Kept thin so that client content sitting just
+   beneath the (hidden) titlebar remains clickable; once the titlebar is
+   revealed, hovering anywhere over it keeps it up (see
+   autohide_pointer_moved()). */
+#define AUTOHIDE_REVEAL_STRIP 5
+
 /* Design.
   
-   Auto-hiding titlebars are revealed when the pointer reaches a window's top
-   edge. Pointer tracking is done per-client: each client window has
-   PointerMotionMask selected on it (see frame_grab_client()), so we are told
-   when the pointer is over the client area and can tell when it reaches the
-   top edge (where the titlebar would sit, overlaid on the client). The
-   titlebar is hidden again (after a short delay) when the pointer leaves the
-   top strip or the frame entirely. No global setup or polling is required.
+   Auto-hiding titlebars are hidden by default, with the client filling to the
+   top edge of the frame. Pointer tracking is done per-client: each client
+   window has PointerMotionMask selected on it (see frame_grab_client()), so we
+   are told when the pointer is over the client area and where.
+  
+   There are two zones at the top edge (autohide_pointer_moved()):
+   1. a thin strip (AUTOHIDE_REVEAL_STRIP px) right at the very top edge --
+      the pointer being here reveals the titlebar. It is deliberately thin so
+      that client content sitting just beneath the hidden titlebar stays
+      clickable;
+   2. the titlebar band beneath it -- once the titlebar is revealed, the
+      pointer being anywhere here keeps it up, so the user can move onto the
+      titlebar and use its buttons.
+   The titlebar is hidden again (after a short delay) when the pointer moves
+   away from both zones or leaves the frame entirely. No global setup or
+   polling is required.
   
    Why motion rather than Enter/Leave on the client? An Enter/Leave on the
    client window fires when the pointer crosses into/out of the whole client
@@ -174,7 +190,8 @@ static ObClient *autohide_client_at(gint x_root, gint y_root)
 
 void autohide_pointer_moved(gint x_root, gint y_root)
 {
-    ObClient *target = NULL;
+    ObClient *reveal = NULL;  /* topmost client whose reveal strip has the pointer */
+    ObClient *onbar  = NULL;  /* topmost client whose (revealed) titlebar has it */
     GList *it;
 
     if (!config_autohide_titlebar)
@@ -183,20 +200,24 @@ void autohide_pointer_moved(gint x_root, gint y_root)
         /* leave things alone while the user is dragging a window */
         return;
 
-    /* the window to reveal is the topmost one under the pointer, and only if
-       the pointer is within its top-edge strip (where the titlebar would sit)
-     */
+    /* The pointer is over the topmost client under it. There are two zones at
+       the top edge of that client: a thin strip right at the very top edge
+       (which reveals the titlebar) and, beneath it, the titlebar band (which,
+       once the titlebar is up, is a "keep it shown" zone so the user can move
+       the pointer onto the titlebar and use it). */
     {
         ObClient *c = autohide_client_at(x_root, y_root);
-        if (c) {
-            gboolean act = autohide_active_for(c->frame);
+        if (c && autohide_active_for(c->frame)) {
             gint top = c->frame->area.y;
             int inx = (x_root >= c->frame->area.x &&
                        x_root < c->frame->area.x + c->frame->area.width);
-            int iny = (y_root >= top &&
-                       y_root < top + ob_rr_theme->title_height);
-            if (act && inx && iny)
-                target = c;
+            if (inx) {
+                if (y_root >= top && y_root < top + AUTOHIDE_REVEAL_STRIP)
+                    reveal = c;
+                else if (y_root >= top &&
+                         y_root < top + ob_rr_theme->title_height)
+                    onbar = c;
+            }
         }
     }
 
@@ -207,14 +228,24 @@ void autohide_pointer_moved(gint x_root, gint y_root)
         if (!autohide_active_for(f))
             continue;
 
-        if (c == target) {
+        if (c == reveal) {
+            /* pointer is at the very top edge: reveal (and keep revealed) */
             if (!f->tb_shown)
                 autohide_show(f);
             if (f->tb_hide_timer) {
                 g_source_remove(f->tb_hide_timer);
                 f->tb_hide_timer = 0;
             }
+        } else if (c == onbar) {
+            /* pointer is over the revealed titlebar: keep it up so it can be
+               clicked; do nothing if it is not currently shown */
+            if (f->tb_shown && f->tb_hide_timer) {
+                g_source_remove(f->tb_hide_timer);
+                f->tb_hide_timer = 0;
+            }
         } else {
+            /* pointer is away from the top edge and the titlebar: hide after
+               the configured delay */
             if (f->tb_shown && !f->tb_hide_timer) {
                 f->tb_hide_timer = g_timeout_add(
                                         config_autohide_titlebar_hide_delay,

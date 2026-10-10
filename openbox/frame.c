@@ -402,8 +402,13 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
         if (autohide_active_for(self)) {
             /* auto-hiding titlebars: reserve no titlebar space, so the client
                fills to the top edge. The titlebar is drawn as an overlay on
-               top of the client area when it is revealed (see autohide.c). */
-            self->size.top = 0;
+               top of the client area when it is revealed (see autohide.c).
+               A non-maximised window keeps a thin top border (the same width
+               as the side borders) so the frame outline is complete on all
+               four sides; maximised windows sit edge to edge at the top of
+               the work area, so they need no top border. */
+            self->size.top = (self->max_horz || self->max_vert) ? 0
+                                                                : self->bwidth;
         }
         else if (self->decorations & OB_FRAME_DECOR_TITLEBAR)
             self->size.top += ob_rr_theme->title_height + self->bwidth;

@@ -92,9 +92,9 @@ gboolean autohide_active_for(ObFrame *f)
     /* only decorate windows that would normally show a titlebar */
     if (!(c->decorations & OB_FRAME_DECOR_TITLEBAR) || c->undecorated)
         return FALSE;
-    /* windows that are edge-to-edge or have no client area to hide behind */
-    if (c->max_horz || c->max_vert)
-        return FALSE;
+    /* maximised windows keep the autohide titlebar too: the client still
+       fills the work area (edge to edge), so the titlebar simply overlays
+       the very top of it and is revealed from the top edge of the screen. */
     if (c->fullscreen || c->shaded || c->iconic)
         return FALSE;
     /* must be tall enough for the titlebar to sit on top of the client */
@@ -121,9 +121,11 @@ void autohide_show(ObFrame *f)
     if (!autohide_active_for(f) || f->tb_shown)
         return;
 
-    /* the titlebar overlays the top edge of the client area */
+    /* the titlebar overlays the top edge of the client area; maximised
+       (horizontally) windows are edge to edge, so start at x=0 like the
+       normal (non-autohide) titlebar does. */
     XMoveResizeWindow(obt_display, f->title,
-                      f->bwidth, 0,
+                      (f->max_horz ? 0 : f->bwidth), 0,
                       f->width, ob_rr_theme->title_height);
     /* bring the titlebar (and its button children) above the client */
     XRaiseWindow(obt_display, f->title);

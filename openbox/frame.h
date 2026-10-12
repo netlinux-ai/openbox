@@ -206,6 +206,9 @@ struct _ObFrame
     /*! For auto-hiding titlebars: is this frame's titlebar currently
         revealed as an overlay on top of the client area? */
     gboolean  tb_shown;
+    /*! The ObAutohideEdge the revealed titlebar is anchored to; only
+        meaningful while tb_shown (anything but BOTTOM means the top) */
+    gint      tb_edge;
     /*! Pending g_timeout_add() id for auto-hiding the titlebar once the
         pointer has left its top edge; 0 when none is pending. */
     guint     tb_hide_timer;

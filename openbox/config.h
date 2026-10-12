@@ -254,6 +254,9 @@ extern gboolean config_autohide_titlebar;
 /*! Milliseconds a revealed titlebar stays visible after the pointer leaves its
   top edge before it auto-hides. */
 extern guint config_autohide_titlebar_hide_delay;
+/*! Which edges of the client area (an ObAutohideEdge bitmask) an auto-hiding
+  titlebar can be revealed from. */
+extern gint config_autohide_titlebar_edges;
 
 void config_startup(ObtXmlInst *i);
 void config_shutdown(void);

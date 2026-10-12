@@ -38,7 +38,12 @@
 /* Design.
   
    Auto-hiding titlebars are hidden by default, with the client filling to the
-   top edge of the frame. Pointer tracking is done per-client: each client
+   top edge of the frame. The titlebar can be revealed from the top edge, the
+   bottom edge, or either (config_autohide_titlebar_edges); it is the same
+   titlebar window either way, just anchored to the edge it was revealed from
+   (frame->tb_edge, autohide_title_y()). Everything below describes the top
+   edge; the bottom edge mirrors it, measured up from the bottom of the client
+   area. Pointer tracking is done per-client: each client
    window has PointerMotionMask selected on it (see frame_grab_client()), so we
    are told when the pointer is over the client area and where.
   
@@ -116,16 +121,26 @@ static gboolean tb_hide_timeout(gpointer data)
     return FALSE; /* one-shot */
 }
 
-void autohide_show(ObFrame *f)
+gint autohide_title_y(ObFrame *f)
 {
-    if (!autohide_active_for(f) || f->tb_shown)
+    if (f->tb_edge == OB_AUTOHIDE_EDGE_BOTTOM)
+        /* along the bottom of the client area */
+        return f->size.top + f->client->area.height -
+               ob_rr_theme->title_height;
+    return 0;
+}
+
+void autohide_show(ObFrame *f, ObAutohideEdge edge)
+{
+    if (!autohide_active_for(f) || (f->tb_shown && f->tb_edge == edge))
         return;
 
-    /* the titlebar overlays the top edge of the client area; maximised
+    f->tb_edge = edge;
+    /* the titlebar overlays an edge of the client area; maximised
        (horizontally) windows are edge to edge, so start at x=0 like the
        normal (non-autohide) titlebar does. */
     XMoveResizeWindow(obt_display, f->title,
-                      (f->max_horz ? 0 : f->bwidth), 0,
+                      (f->max_horz ? 0 : f->bwidth), autohide_title_y(f),
                       f->width, ob_rr_theme->title_height);
     /* bring the titlebar (and its button children) above the client */
     XRaiseWindow(obt_display, f->title);
@@ -193,6 +208,7 @@ static ObClient *autohide_client_at(gint x_root, gint y_root)
 void autohide_pointer_moved(gint x_root, gint y_root)
 {
     ObClient *reveal = NULL;  /* topmost client whose reveal strip has the pointer */
+    ObAutohideEdge reveal_edge = OB_AUTOHIDE_EDGE_TOP; /* ...and which edge */
     ObClient *onbar  = NULL;  /* topmost client whose (revealed) titlebar has it */
     GList *it;
 
@@ -210,15 +226,38 @@ void autohide_pointer_moved(gint x_root, gint y_root)
     {
         ObClient *c = autohide_client_at(x_root, y_root);
         if (c && autohide_active_for(c->frame)) {
-            gint top = c->frame->area.y;
-            int inx = (x_root >= c->frame->area.x &&
-                       x_root < c->frame->area.x + c->frame->area.width);
+            ObFrame *f = c->frame;
+            gint th = ob_rr_theme->title_height;
+            gint top = f->area.y;
+            /* the bottom edge is that of the client area: that is where the
+               overlay sits, and the client window is what reports motion */
+            gint bottom = c->area.y + c->area.height;
+            int inx = (x_root >= f->area.x &&
+                       x_root < f->area.x + f->area.width);
             if (inx) {
-                if (y_root >= top && y_root < top + AUTOHIDE_REVEAL_STRIP)
+                if ((config_autohide_titlebar_edges & OB_AUTOHIDE_EDGE_TOP) &&
+                    y_root >= top && y_root < top + AUTOHIDE_REVEAL_STRIP)
+                {
                     reveal = c;
-                else if (y_root >= top &&
-                         y_root < top + ob_rr_theme->title_height)
-                    onbar = c;
+                    reveal_edge = OB_AUTOHIDE_EDGE_TOP;
+                }
+                else if ((config_autohide_titlebar_edges &
+                          OB_AUTOHIDE_EDGE_BOTTOM) &&
+                         y_root < bottom &&
+                         y_root >= bottom - AUTOHIDE_REVEAL_STRIP)
+                {
+                    reveal = c;
+                    reveal_edge = OB_AUTOHIDE_EDGE_BOTTOM;
+                }
+                else if (f->tb_shown &&
+                         (f->tb_edge & config_autohide_titlebar_edges))
+                {
+                    /* over the band the revealed titlebar occupies */
+                    if (f->tb_edge == OB_AUTOHIDE_EDGE_BOTTOM
+                        ? (y_root < bottom && y_root >= bottom - th)
+                        : (y_root >= top && y_root < top + th))
+                        onbar = c;
+                }
             }
         }
     }
@@ -232,8 +271,7 @@ void autohide_pointer_moved(gint x_root, gint y_root)
 
         if (c == reveal) {
             /* pointer is at the very top edge: reveal (and keep revealed) */
-            if (!f->tb_shown)
-                autohide_show(f);
+            autohide_show(f, reveal_edge);
             if (f->tb_hide_timer) {
                 g_source_remove(f->tb_hide_timer);
                 f->tb_hide_timer = 0;

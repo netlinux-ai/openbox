@@ -23,6 +23,13 @@
 struct _ObClient;
 struct _ObFrame;
 
+/*! The edges of a window's client area that an auto-hiding titlebar can be
+  revealed from. A bitmask, so the configuration can allow several at once. */
+typedef enum {
+    OB_AUTOHIDE_EDGE_TOP    = 1 << 0,
+    OB_AUTOHIDE_EDGE_BOTTOM = 1 << 1
+} ObAutohideEdge;
+
 void autohide_startup(gboolean reconfig);
 void autohide_shutdown(gboolean reconfig);
 
@@ -31,9 +38,15 @@ void autohide_shutdown(gboolean reconfig);
   hidden behind its client area. */
 gboolean autohide_active_for(struct _ObFrame *f);
 
-/*! Reveal the frame's titlebar as an overlay on top of the client area,
-  right now, without any delay. */
-void autohide_show(struct _ObFrame *f);
+/*! Reveal the frame's titlebar as an overlay on top of the client area, at
+  the given edge of it, right now, without any delay. If the titlebar is
+  already revealed at another edge it is moved to this one. */
+void autohide_show(struct _ObFrame *f, ObAutohideEdge edge);
+
+/*! The y position, relative to the frame window, of the frame's titlebar
+  overlay: at the top of the client area or, if it was revealed from the
+  bottom edge, along the bottom of it. */
+gint autohide_title_y(struct _ObFrame *f);
 /*! Hide the frame's titlebar overlay right now, if it is visible or about to
    be hidden. */
 void autohide_hide(struct _ObFrame *f);

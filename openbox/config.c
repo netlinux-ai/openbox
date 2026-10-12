@@ -18,6 +18,7 @@
 */
 
 #include "config.h"
+#include "autohide.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include "actions.h"
@@ -111,6 +112,7 @@ GSList  *config_snap_layouts_list;
 
 gboolean config_autohide_titlebar;
 guint    config_autohide_titlebar_hide_delay;
+gint     config_autohide_titlebar_edges;
 
 gint     config_resist_win;
 gint     config_resist_edge;
@@ -1082,6 +1084,17 @@ static void parse_autohide_titlebar(xmlNodePtr node, gpointer d)
         config_autohide_titlebar = obt_xml_node_bool(n);
     if ((n = obt_xml_find_node(node, "hideDelay")))
         config_autohide_titlebar_hide_delay = MAX(0, obt_xml_node_int(n));
+    if ((n = obt_xml_find_node(node, "position"))) {
+        gchar *s = obt_xml_node_string(n);
+        if (!g_ascii_strcasecmp(s, "top"))
+            config_autohide_titlebar_edges = OB_AUTOHIDE_EDGE_TOP;
+        else if (!g_ascii_strcasecmp(s, "bottom"))
+            config_autohide_titlebar_edges = OB_AUTOHIDE_EDGE_BOTTOM;
+        else if (!g_ascii_strcasecmp(s, "both"))
+            config_autohide_titlebar_edges = OB_AUTOHIDE_EDGE_TOP |
+                                             OB_AUTOHIDE_EDGE_BOTTOM;
+        g_free(s);
+    }
 }
 
 static void parse_snap_layouts(xmlNodePtr node, gpointer d)
@@ -1350,6 +1363,7 @@ void config_startup(ObtXmlInst *i)
 
     config_autohide_titlebar = FALSE;
     config_autohide_titlebar_hide_delay = 1000;
+    config_autohide_titlebar_edges = OB_AUTOHIDE_EDGE_TOP;
 
     obt_xml_register(i, "autoHideTitlebar", parse_autohide_titlebar, NULL);
 

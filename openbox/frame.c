@@ -593,7 +593,8 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
                        on every resize, e.g. while dragging, so we must not
                        force it hidden here). */
                     XMoveResizeWindow(obt_display, self->title,
-                                      (self->max_horz ? 0 : self->bwidth), 0,
+                                      (self->max_horz ? 0 : self->bwidth),
+                                      autohide_title_y(self),
                                       self->width, ob_rr_theme->title_height);
                     if (self->tb_shown)
                         XMapWindow(obt_display, self->title);

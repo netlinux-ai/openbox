@@ -223,14 +223,17 @@ void autohide_update_strips(ObFrame *f)
                  !(f->tb_shown && f->tb_edge == OB_AUTOHIDE_EDGE_TOP),
                  0, 0, f->width, f->size.top + AUTOHIDE_REVEAL_STRIP);
 
-    /* along the bottom of the client area, where the overlay would sit */
+    /* along the bottom of the client area, where the overlay would sit, and
+       on down through whatever border/handle is below it to the frame's edge:
+       this strip is only used where that is the edge of the screen, so the
+       pointer clamps on the very last row, which may not be client area */
     update_strip(f->autohide_strip_bottom,
                  active && bottom_edge &&
                  (config_autohide_titlebar_edges & OB_AUTOHIDE_EDGE_BOTTOM) &&
                  !(f->tb_shown && f->tb_edge == OB_AUTOHIDE_EDGE_BOTTOM),
                  f->size.left,
                  f->size.top + f->client->area.height - AUTOHIDE_REVEAL_STRIP,
-                 f->client->area.width, AUTOHIDE_REVEAL_STRIP);
+                 f->client->area.width, AUTOHIDE_REVEAL_STRIP + f->size.bottom);
 }
 
 void autohide_frame_exit(ObFrame *f, gint x_root, gint y_root)

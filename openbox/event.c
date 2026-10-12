@@ -509,10 +509,6 @@ static void event_process(const XEvent *ec, gpointer data)
        pointer is at. */
     if (e->type == MotionNotify)
         autohide_pointer_moved(e->xmotion.x_root, e->xmotion.y_root);
-    /* ...but clients using XInput2 (e.g. GTK3) are never sent that core
-       MotionNotify, so also sample the pointer while it is over a window */
-    else if (e->type == EnterNotify)
-        autohide_poll_start();
 
     event_set_curtime(e);
     event_curserial = e->xany.serial;

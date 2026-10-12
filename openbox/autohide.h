@@ -55,12 +55,6 @@ void autohide_hide(struct _ObFrame *f);
    schedule it to be hidden after the configured delay. */
 void autohide_frame_leave(struct _ObFrame *f);
 
-/*! Start sampling the pointer position (it stops itself once the pointer is
-  not over any window). Needed because clients using XInput2 are never sent
-  the core pointer-motion events we would otherwise rely on. Call when the
-  pointer enters a window. */
-void autohide_poll_start(void);
-
 /*! The pointer has moved to (x_root, y_root). Decide which window, if any,
   should have its titlebar revealed, and schedule auto-hiding for the others. */
 void autohide_pointer_moved(gint x_root, gint y_root);

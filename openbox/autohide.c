@@ -74,14 +74,83 @@
    the code is correct. Verify on a display with a working pointer-motion
    path (a normal local or full VNC X server with XTEST). */
 
+/* Polling.
+
+   Per-client MotionNotify is not enough on its own: toolkits that use XInput2
+   for pointer input (GTK3) select XI2 motion on their window, and the X server
+   then delivers the pointer motion to them as XI2 *instead of* as the core
+   MotionNotify we select, so such clients never tell us where the pointer is.
+   So while the pointer is over a window we also sample it with a short timer.
+   It is started by an EnterNotify on any frame (core crossing events on the
+   frame are unaffected) and stops itself once the pointer is not over any
+   window and no titlebar is revealed, so nothing runs while idle. */
+#define AUTOHIDE_POLL_INTERVAL 50
+
+static guint poll_timer = 0;
+static gint poll_x = -1, poll_y = -1;
+
+static ObClient *autohide_client_at(gint x_root, gint y_root);
+
+static gboolean poll_pointer(gpointer data)
+{
+    Window root, child;
+    gint x, y, wx, wy;
+    guint mask;
+    gboolean keep;
+    GList *it;
+
+    if (!config_autohide_titlebar) {
+        poll_timer = 0;
+        return FALSE;
+    }
+
+    if (!XQueryPointer(obt_display, RootWindow(obt_display, ob_screen),
+                       &root, &child, &x, &y, &wx, &wy, &mask))
+    {
+        poll_timer = 0;
+        return FALSE;
+    }
+
+    if (x != poll_x || y != poll_y) {
+        poll_x = x;
+        poll_y = y;
+        autohide_pointer_moved(x, y);
+    }
+
+    /* carry on while the pointer is over a window or a titlebar is up (so
+       that it still gets hidden) */
+    keep = autohide_client_at(x, y) != NULL;
+    for (it = client_list; !keep && it; it = g_list_next(it))
+        if (((ObClient*)it->data)->frame->tb_shown)
+            keep = TRUE;
+
+    if (!keep)
+        poll_timer = 0;
+    return keep;
+}
+
+void autohide_poll_start(void)
+{
+    if (poll_timer || !config_autohide_titlebar)
+        return;
+    poll_x = poll_y = -1;
+    poll_timer = g_timeout_add(AUTOHIDE_POLL_INTERVAL, poll_pointer, NULL);
+}
+
 void autohide_startup(gboolean reconfig)
 {
     (void)reconfig;
+    /* the pointer may already be over a window (e.g. after a reconfigure) */
+    autohide_poll_start();
 }
 
 void autohide_shutdown(gboolean reconfig)
 {
     (void)reconfig;
+    if (poll_timer) {
+        g_source_remove(poll_timer);
+        poll_timer = 0;
+    }
 }
 
 gboolean autohide_active_for(ObFrame *f)

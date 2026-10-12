@@ -18,6 +18,7 @@
 #include "autohide.h"
 #include "client.h"
 #include "config.h"
+#include "focus.h"
 #include "frame.h"
 #include "framerender.h"
 #include "moveresize.h"
@@ -43,10 +44,17 @@
 
    The pointer is tracked with core crossing events on windows that openbox
    itself owns, so no client can interfere with it:
-   1. a thin InputOnly "reveal strip" window along each allowed edge of the
-      client area, mapped only while the titlebar is hidden there. The pointer
-      entering it reveals the titlebar (autohide_strip_crossing());
-   2. the revealed titlebar itself (and its buttons): the pointer being over it
+   1. the pointer leaving the focused window through an allowed edge: the
+      LeaveNotify on the frame carries the pointer's new position, which says
+      which edge it went out through (autohide_frame_exit()). This needs no
+      extra window, steals no clicks, and is not fooled by a fast flick, since
+      the server reports where the pointer landed;
+   2. where the pointer cannot leave because the edge of the window is the edge
+      of the screen (maximised windows): a thin InputOnly "reveal strip"
+      window along that edge, mapped only while the titlebar is hidden there.
+      The pointer is clamped at the screen edge, so it always lands in it
+      (autohide_strip_crossing());
+   3. the revealed titlebar itself (and its buttons): the pointer being over it
       keeps it up, and leaving it begins the hide delay
       (autohide_titlebar_crossing()). The frame being left entirely does the
       same (autohide_frame_leave()).
@@ -193,27 +201,80 @@ static void update_strip(Window strip, gboolean want,
 void autohide_update_strips(ObFrame *f)
 {
     gboolean active;
+    gboolean top_edge, bottom_edge;
+    const Rect *screen;
 
     if (!f || !f->client)
         return;
     active = autohide_active_for(f);
 
+    /* Only windows whose edge is the edge of the screen need a strip: the
+       pointer cannot leave through it, so autohide_frame_exit() never fires
+       there. Everywhere else the pointer leaving the window does the job. */
+    screen = screen_physical_area_all_monitors();
+    top_edge = f->area.y <= screen->y;
+    bottom_edge = f->area.y + f->area.height >= screen->y + screen->height;
+
     /* along the top: from the frame's own top edge (so the thin border above a
        non-maximised client reveals too) down into the client area */
     update_strip(f->autohide_strip_top,
-                 active &&
+                 active && top_edge &&
                  (config_autohide_titlebar_edges & OB_AUTOHIDE_EDGE_TOP) &&
                  !(f->tb_shown && f->tb_edge == OB_AUTOHIDE_EDGE_TOP),
                  0, 0, f->width, f->size.top + AUTOHIDE_REVEAL_STRIP);
 
     /* along the bottom of the client area, where the overlay would sit */
     update_strip(f->autohide_strip_bottom,
-                 active &&
+                 active && bottom_edge &&
                  (config_autohide_titlebar_edges & OB_AUTOHIDE_EDGE_BOTTOM) &&
                  !(f->tb_shown && f->tb_edge == OB_AUTOHIDE_EDGE_BOTTOM),
                  f->size.left,
                  f->size.top + f->client->area.height - AUTOHIDE_REVEAL_STRIP,
                  f->client->area.width, AUTOHIDE_REVEAL_STRIP);
+}
+
+void autohide_frame_exit(ObFrame *f, gint x_root, gint y_root)
+{
+    gint ax, ay, aw, ah, dx, above, below;
+    ObAutohideEdge edge;
+
+    /* only the focused window: otherwise every window the pointer crosses on
+       its way somewhere else would flash its titlebar */
+    if (!f || !f->client || f->client != focus_client)
+        return;
+    if (moveresize_in_progress || !autohide_active_for(f))
+        return;
+
+    ax = f->area.x;
+    ay = f->area.y;
+    aw = f->area.width;
+    ah = f->area.height;
+
+    /* how far outside the frame, on each side, the pointer has ended up. The
+       frame may also have been left because another window opened over it, in
+       which case the pointer is still inside its area and none of these is
+       positive. */
+    dx = x_root < ax ? ax - x_root :
+         x_root >= ax + aw ? x_root - (ax + aw) + 1 : 0;
+    above = ay - y_root;
+    below = y_root - (ay + ah) + 1;
+
+    /* it must have gone out mostly through the top or the bottom, not the
+       side (a diagonal exit near a corner counts as whichever is further) */
+    if (above > 0 && above >= dx)
+        edge = OB_AUTOHIDE_EDGE_TOP;
+    else if (below > 0 && below >= dx)
+        edge = OB_AUTOHIDE_EDGE_BOTTOM;
+    else
+        return;
+
+    if (!(config_autohide_titlebar_edges & edge))
+        return;
+
+    autohide_show(f, edge);
+    /* the pointer is not on the titlebar, so give it the hide delay to get
+       there (entering it cancels this) */
+    autohide_frame_leave(f);
 }
 
 gboolean autohide_strip_crossing(ObFrame *f, Window win, gboolean enter)

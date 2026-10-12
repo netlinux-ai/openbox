@@ -1201,8 +1201,16 @@ static void event_handle_client(ObClient *client, XEvent *e)
         case OB_FRAME_CONTEXT_FRAME:
             /* the pointer left the whole window; if a titlebar is being
                auto-shown, this is how we learn it should be hidden */
-            if (e->type == LeaveNotify)
+            if (e->type == LeaveNotify) {
+                /* ...and if it went out through the top or bottom edge, that
+                   is the user asking for the titlebar there */
+                if (e->xcrossing.mode == NotifyNormal &&
+                    e->xcrossing.detail != NotifyInferior)
+                    autohide_frame_exit(client->frame,
+                                        e->xcrossing.x_root,
+                                        e->xcrossing.y_root);
                 autohide_frame_leave(client->frame);
+            }
 
             /* When the mouse leaves an animating window, don't use the
                corresponding enter events. Pretend like the animating window

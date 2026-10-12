@@ -661,9 +661,6 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
             /* layout the title bar elements */
             layout_title(self);
 
-        if (!fake)
-            autohide_update_strips(self);
-
         if (!fake) {
             gint sidebwidth = self->max_horz ? 0 : self->bwidth;
 
@@ -917,6 +914,10 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
         */
         XMoveWindow(obt_display, self->client->window,
                     self->size.left, self->size.top);
+
+        /* the reveal strips depend on the frame's final position (whether an
+           edge of it is the edge of the screen) as well as its size */
+        autohide_update_strips(self);
 
         if (resized) {
             self->need_render = TRUE;

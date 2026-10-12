@@ -62,6 +62,11 @@ void autohide_frame_leave(struct _ObFrame *f);
   current state. The strips exist only while the titlebar is hidden there. */
 void autohide_update_strips(struct _ObFrame *f);
 
+/*! The pointer has left the frame entirely and is now at (x_root, y_root). If
+  the frame is the focused window and the pointer went out through an edge the
+  titlebar can be revealed from, reveal it there. */
+void autohide_frame_exit(struct _ObFrame *f, gint x_root, gint y_root);
+
 /*! A crossing event happened on window `win` of the frame. If it is one of
   the frame's reveal strips, handle it (entering one reveals the titlebar) and
   return TRUE; the caller should then not process the event any further. */

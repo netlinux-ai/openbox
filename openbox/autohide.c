@@ -259,14 +259,20 @@ void autohide_frame_exit(ObFrame *f, gint x_root, gint y_root)
        positive. */
     dx = x_root < ax ? ax - x_root :
          x_root >= ax + aw ? x_root - (ax + aw) + 1 : 0;
-    above = ay - y_root;
-    below = y_root - (ay + ah) + 1;
+    /* The outermost row of the frame counts as outside too. A window whose
+       edge is the edge of the screen gets its LeaveNotify with the pointer
+       still on that last row (some servers, Xephyr among them, hit-test the
+       pointer one pixel past where they report it, so the pointer has left
+       the window while still appearing to be on its last row). A genuine exit
+       always lands further out than this, so it costs nothing elsewhere. */
+    above = ay - y_root + 1;
+    below = y_root - (ay + ah) + 2;
 
     /* it must have gone out mostly through the top or the bottom, not the
        side (a diagonal exit near a corner counts as whichever is further) */
-    if (above > 0 && above >= dx)
+    if (above > 0 && above > dx)
         edge = OB_AUTOHIDE_EDGE_TOP;
-    else if (below > 0 && below >= dx)
+    else if (below > 0 && below > dx)
         edge = OB_AUTOHIDE_EDGE_BOTTOM;
     else
         return;

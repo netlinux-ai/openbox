@@ -19,6 +19,8 @@
 #define __autohide_h
 
 #include <glib.h>
+#include <X11/Xlib.h>
+#include "frame.h"
 
 struct _ObClient;
 struct _ObFrame;
@@ -55,9 +57,22 @@ void autohide_hide(struct _ObFrame *f);
    schedule it to be hidden after the configured delay. */
 void autohide_frame_leave(struct _ObFrame *f);
 
-/*! The pointer has moved to (x_root, y_root). Decide which window, if any,
-  should have its titlebar revealed, and schedule auto-hiding for the others. */
-void autohide_pointer_moved(gint x_root, gint y_root);
+/*! Position and map/unmap the frame's invisible reveal strips (one along each
+  edge of the client area the titlebar can be revealed from) to match its
+  current state. The strips exist only while the titlebar is hidden there. */
+void autohide_update_strips(struct _ObFrame *f);
+
+/*! A crossing event happened on window `win` of the frame. If it is one of
+  the frame's reveal strips, handle it (entering one reveals the titlebar) and
+  return TRUE; the caller should then not process the event any further. */
+gboolean autohide_strip_crossing(struct _ObFrame *f, Window win,
+                                 gboolean enter);
+
+/*! The pointer entered or left part of the frame's titlebar, which has the
+  given context. While the titlebar is revealed this keeps it up (entering) or
+  begins the hide delay (leaving). */
+void autohide_titlebar_crossing(struct _ObFrame *f, ObFrameContext con,
+                                gboolean enter);
 
 /*! A client's state has changed (mapped, maximized, shaded, moved of desktop,
    unmanaged, ...). Hide its titlebar if it is no longer eligible. */

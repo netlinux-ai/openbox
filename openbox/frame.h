@@ -212,9 +212,11 @@ struct _ObFrame
     /*! Pending g_timeout_add() id for auto-hiding the titlebar once the
         pointer has left its top edge; 0 when none is pending. */
     guint     tb_hide_timer;
-    /*! The client window's event mask as it was before auto-hiding titlebars
-        added pointer-motion tracking to it; used to restore it on unmanage. */
-    gulong    client_event_mask;
+    /*! Invisible InputOnly windows along the top and bottom edges of the
+        client area. The pointer entering one reveals an auto-hiding titlebar
+        (see autohide.c); they are only mapped while that is possible. */
+    Window    autohide_strip_top;
+    Window    autohide_strip_bottom;
 
     gboolean  focused;
     gboolean  need_render;

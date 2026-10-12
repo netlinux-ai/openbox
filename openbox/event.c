@@ -503,13 +503,6 @@ static void event_process(const XEvent *ec, gpointer data)
     else
         dockapp = dock_find_dockapp(window);
 
-    /* auto-hiding titlebars are driven by the pointer's position; each client
-       window reports motion for its own area (see frame_grab_client()), and
-       the MotionNotify hook here tells autohide.c which window's top edge the
-       pointer is at. */
-    if (e->type == MotionNotify)
-        autohide_pointer_moved(e->xmotion.x_root, e->xmotion.y_root);
-
     event_set_curtime(e);
     event_curserial = e->xany.serial;
     event_hack_mods(e);
@@ -1175,15 +1168,16 @@ static void event_handle_client(ObClient *client, XEvent *e)
         }
         break;
     case LeaveNotify:
+        if (autohide_strip_crossing(client->frame, e->xcrossing.window, FALSE))
+            break;
         con = frame_context(client, e->xcrossing.window,
                             e->xcrossing.x, e->xcrossing.y);
+        /* leaving the revealed titlebar begins the hide delay */
+        autohide_titlebar_crossing(client->frame, con, FALSE);
         switch (con) {
         case OB_FRAME_CONTEXT_TITLEBAR:
         case OB_FRAME_CONTEXT_TLCORNER:
         case OB_FRAME_CONTEXT_TRCORNER:
-            /* the pointer left the titlebar (the top edge strip); begin hiding
-               the auto-shown titlebar after the configured delay */
-            autohide_frame_leave(client->frame);
             /* we've left the button area inside the titlebar */
             client->frame->max_hover =
                 client->frame->desk_hover =
@@ -1254,8 +1248,14 @@ static void event_handle_client(ObClient *client, XEvent *e)
         break;
     case EnterNotify:
     {
+        /* the pointer reached an auto-hide reveal strip: that's all there is
+           to it */
+        if (autohide_strip_crossing(client->frame, e->xcrossing.window, TRUE))
+            break;
         con = frame_context(client, e->xcrossing.window,
                             e->xcrossing.x, e->xcrossing.y);
+        /* entering the revealed titlebar keeps it up */
+        autohide_titlebar_crossing(client->frame, con, TRUE);
         switch (con) {
         case OB_FRAME_CONTEXT_FRAME:
             if (grab_on_keyboard())

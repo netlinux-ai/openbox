@@ -179,6 +179,19 @@ ObFrame *frame_new(ObClient *client)
     self->rgriptop = createWindow(self->window, NULL, mask, &attrib);
     self->rgripbottom = createWindow(self->window, NULL, mask, &attrib);
 
+    /* the reveal strips for auto-hiding titlebars are input-only: they have no
+       appearance, they exist to be told when the pointer reaches an edge */
+    {
+        XSetWindowAttributes sattrib;
+        sattrib.event_mask = EnterWindowMask | LeaveWindowMask;
+        self->autohide_strip_top =
+            XCreateWindow(obt_display, self->window, 0, 0, 1, 1, 0, 0,
+                          InputOnly, CopyFromParent, CWEventMask, &sattrib);
+        self->autohide_strip_bottom =
+            XCreateWindow(obt_display, self->window, 0, 0, 1, 1, 0, 0,
+                          InputOnly, CopyFromParent, CWEventMask, &sattrib);
+    }
+
     self->focused = FALSE;
 
     /* the other stuff is shown based on decor settings */
@@ -648,6 +661,9 @@ void frame_adjust_area(ObFrame *self, gboolean moved,
             /* layout the title bar elements */
             layout_title(self);
 
+        if (!fake)
+            autohide_update_strips(self);
+
         if (!fake) {
             gint sidebwidth = self->max_horz ? 0 : self->bwidth;
 
@@ -1059,22 +1075,13 @@ void frame_grab_client(ObFrame *self)
        req's) the ButtonPress is to catch clicks on the client border */
     XSelectInput(obt_display, self->window, FRAME_EVENTMASK);
 
-    /* for auto-hiding titlebars we need to know when the pointer is over the
-       client area (the top edge of which is where the titlebar would sit). The
-       client window does not report pointer motion to us by default, so add
-       PointerMotionMask to it, preserving whatever mask the client already had.
-       We restore the original mask in frame_release_client(). */
-    {
-        XWindowAttributes cwa;
-        if (XGetWindowAttributes(obt_display, self->client->window, &cwa)) {
-            self->client_event_mask = cwa.your_event_mask;
-            XSelectInput(obt_display, self->client->window,
-                         cwa.your_event_mask | PointerMotionMask);
-        }
-    }
-
     /* set all the windows for the frame in the window_map */
     window_add(&self->window, CLIENT_AS_WINDOW(self->client));
+    window_add(&self->autohide_strip_top, CLIENT_AS_WINDOW(self->client));
+    window_add(&self->autohide_strip_bottom, CLIENT_AS_WINDOW(self->client));
+    /* the client was reparented above them, so put them back on top */
+    XRaiseWindow(obt_display, self->autohide_strip_top);
+    XRaiseWindow(obt_display, self->autohide_strip_bottom);
     window_add(&self->backback, CLIENT_AS_WINDOW(self->client));
     window_add(&self->backfront, CLIENT_AS_WINDOW(self->client));
     window_add(&self->innerleft, CLIENT_AS_WINDOW(self->client));
@@ -1139,10 +1146,6 @@ void frame_release_client(ObFrame *self)
     if (self->iconify_animation_timer)
         g_source_remove(self->iconify_animation_timer);
 
-    /* undo the pointer-motion tracking we added to the client for
-       auto-hiding titlebars (see frame_grab_client()) */
-    XSelectInput(obt_display, self->client->window, self->client_event_mask);
-
     /* check if the app has already reparented its window away */
     if (!xqueue_exists_local(find_reparent, self)) {
         /* according to the ICCCM - if the client doesn't reparent itself,
@@ -1153,6 +1156,8 @@ void frame_release_client(ObFrame *self)
 
     /* remove all the windows for the frame from the window_map */
     window_remove(self->window);
+    window_remove(self->autohide_strip_top);
+    window_remove(self->autohide_strip_bottom);
     window_remove(self->backback);
     window_remove(self->backfront);
     window_remove(self->innerleft);

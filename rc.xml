@@ -42,7 +42,7 @@
                   'Active' - where the active window is -->
   </placement>
   <theme>
-    <name>Clearlooks-Graham-autohide</name>
+    <name>Bear2-Graham</name>
     <titleLayout>NODLYSIMC</titleLayout>
     <configManagerCommand>/Data/obconf/src/obconf --config-file /Data/openbox/rc.xml</configManagerCommand>
     <!--
@@ -59,7 +59,7 @@
     <animateIconify>no</animateIconify>
     <font place="ActiveWindow">
       <name>sans</name>
-      <size>8</size>
+      <size>24</size>
       <!-- font size in points -->
       <weight>Bold</weight>
       <!-- 'bold' or 'normal' -->
@@ -859,7 +859,7 @@
   </applications>
   <autoHideTitlebar>
     <enabled>yes</enabled>
-    <hideDelay>1000</hideDelay>
+    <hideDelay>500</hideDelay>
     <position>both</position>
   </autoHideTitlebar>
 </openbox_config>

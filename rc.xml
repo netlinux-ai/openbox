@@ -44,6 +44,7 @@
   <theme>
     <name>Clearlooks-Graham-autohide</name>
     <titleLayout>NODLYSIMC</titleLayout>
+    <configManagerCommand>/Data/obconf/src/obconf --config-file /Data/openbox/rc.xml</configManagerCommand>
     <!--
       available characters are NDSLIMC, each can occur at most once.
       N: window icon
@@ -58,7 +59,7 @@
     <animateIconify>no</animateIconify>
     <font place="ActiveWindow">
       <name>sans</name>
-      <size>24</size>
+      <size>8</size>
       <!-- font size in points -->
       <weight>Bold</weight>
       <!-- 'bold' or 'normal' -->
@@ -859,5 +860,6 @@
   <autoHideTitlebar>
     <enabled>yes</enabled>
     <hideDelay>1000</hideDelay>
+    <position>both</position>
   </autoHideTitlebar>
 </openbox_config>
